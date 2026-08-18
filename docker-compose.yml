@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: thetiptop_app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=thetiptop
+      - DB_USER=thetiptop_user
+      - DB_PASS=thetiptop_pass
+    networks:
+      - furious-network
+    restart: always
+
+  db:
+    image: mariadb:10.11
+    container_name: thetiptop_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_pass
+      - MYSQL_DATABASE=thetiptop
+      - MYSQL_USER=thetiptop_user
+      - MYSQL_PASSWORD=thetiptop_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./src/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - furious-network
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: thetiptop_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=thetiptop_user
+      - PMA_PASSWORD=thetiptop_pass
+    depends_on:
+      - db
+    networks:
+      - furious-network
+    restart: always
+
+volumes:
+  db_data:
+
+networks:
+  furious-network:
+    external: true
