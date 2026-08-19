@@ -17,10 +17,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="hero-circle hc2"></div>
             <div class="hero-circle hc3"></div>
             <img
-                src="https://picsum.photos/seed/teacup/400/400"
-                alt="Thé marocain artisanal"
-                class="hero-photo"
-                loading="eager"
+                src="https://images.pexels.com/photos/1638280/pexels-photo-1638280.jpeg?w=400&h=400&fit=crop"
+
             >
             <div class="steam-wrap">
                 <div class="steam"></div>
@@ -98,9 +96,8 @@ require_once __DIR__ . '/includes/header.php';
 <section class="ttt-histoire reveal">
     <div class="histoire-visuel">
         <img
-            src="https://picsum.photos/seed/medina/800/600"
-            alt="Médina marocaine, berceau des thés Tip Top"
-            loading="lazy"
+            src="https://images.pexels.com/photos/3889843/pexels-photo-3889843.jpeg?w=800&h=600&fit=crop"
+
         >
         <div class="histoire-visuel-overlay">
             <div class="histoire-badge-mini">
@@ -267,9 +264,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
     <div class="boutique-visuel">
         <img
-            src="https://picsum.photos/seed/boutique/800/600"
-            alt="Boutique Thé Tip Top Nice"
-            loading="lazy"
+            src="https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?w=800&h=600&fit=crop"
         >
         <div class="boutique-visuel-overlay"></div>
     </div>
