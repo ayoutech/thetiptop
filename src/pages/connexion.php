@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && password_verify($mdp, $user['mot_de_passe'])) {
+        if ($user && password_verify($mdp, $user['password'])) {
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['user_nom']  = $user['prenom'] . ' ' . $user['nom'];
             $_SESSION['user_role'] = $user['role'];
@@ -60,10 +60,7 @@ require_once __DIR__ . '/../includes/header.php';
     max-width: 420px;
     box-shadow: 0 4px 32px rgba(26,46,26,0.06);
 }
-.auth-logo {
-    text-align: center;
-    margin-bottom: 2rem;
-}
+.auth-logo { text-align: center; margin-bottom: 2rem; }
 .auth-logo-sym {
     font-family: 'Playfair Display', serif;
     font-size: 1.1rem;
@@ -150,17 +147,6 @@ require_once __DIR__ . '/../includes/header.php';
     border: 1px solid #f0c0c0;
     color: #8b2020;
 }
-.forgot-link {
-    text-align: right;
-    margin-top: -0.6rem;
-    margin-bottom: 1rem;
-}
-.forgot-link a {
-    font-size: 0.75rem;
-    color: #9aaa9a;
-    text-decoration: none;
-}
-.forgot-link a:hover { color: var(--or); }
 @media (max-width: 480px) {
     .auth-card { padding: 2rem 1.2rem; }
 }
