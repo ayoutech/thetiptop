@@ -1,4 +1,5 @@
 <?php
+<?php ob_start(); ?>
 $page_title = 'Inscription — Thé Tip Top';
 require_once __DIR__ . '/../includes/header.php';
 
