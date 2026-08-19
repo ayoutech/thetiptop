@@ -4,8 +4,8 @@ if (isset($_SESSION['user_id'])) {
     header('Location: /pages/mon-compte.php');
     exit;
 }
-require_once __DIR__ . '/../includes/db.php';
-
+require_once __DIR__ . '/../config/database.php';
+$pdo = getDB();
 $erreur = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
