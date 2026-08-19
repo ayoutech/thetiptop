@@ -1,7 +1,9 @@
 <?php ob_start();
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (isset($_SESSION['user_id'])) {
-    header('Location: /pages/mon-compte.php');
+    header('Location: /pages/participation.php');
     exit;
 }
 require_once __DIR__ . '/../config/database.php';
@@ -10,13 +12,13 @@ $erreur = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $prenom   = trim($_POST['prenom'] ?? '');
-    $nom      = trim($_POST['nom'] ?? '');
-    $email    = trim($_POST['email'] ?? '');
-    $age      = intval($_POST['age'] ?? 0);
-    $sexe     = $_POST['sexe'] ?? '';
-    $mdp      = $_POST['mot_de_passe'] ?? '';
-    $mdp2     = $_POST['mot_de_passe2'] ?? '';
+    $prenom     = trim($_POST['prenom'] ?? '');
+    $nom        = trim($_POST['nom'] ?? '');
+    $email      = trim($_POST['email'] ?? '');
+    $age        = intval($_POST['age'] ?? 0);
+    $sexe       = $_POST['sexe'] ?? '';
+    $mdp        = $_POST['mot_de_passe'] ?? '';
+    $mdp2       = $_POST['mot_de_passe2'] ?? '';
     $newsletter = isset($_POST['newsletter']) ? 1 : 0;
 
     if (!$prenom || !$nom || !$email || !$age || !$sexe || !$mdp) {
@@ -36,11 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $erreur = 'Cette adresse email est déjà utilisée.';
         } else {
             $hash = password_hash($mdp, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare('INSERT INTO users (prenom, nom, email, age, sexe, mot_de_passe, newsletter, role) VALUES (?,?,?,?,?,?,?,?)');
+            $stmt = $pdo->prepare('INSERT INTO users (prenom, nom, email, age, sexe, password, newsletter, role) VALUES (?,?,?,?,?,?,?,?)');
             $stmt->execute([$prenom, $nom, $email, $age, $sexe, $hash, $newsletter, 'client']);
             $user_id = $pdo->lastInsertId();
-            $_SESSION['user_id']  = $user_id;
-            $_SESSION['user_nom'] = $prenom . ' ' . $nom;
+            $_SESSION['user_id']   = $user_id;
+            $_SESSION['user_nom']  = $prenom . ' ' . $nom;
             $_SESSION['user_role'] = 'client';
             header('Location: /pages/participation.php');
             exit;
@@ -70,10 +72,7 @@ require_once __DIR__ . '/../includes/header.php';
     max-width: 520px;
     box-shadow: 0 4px 32px rgba(26,46,26,0.06);
 }
-.auth-logo {
-    text-align: center;
-    margin-bottom: 2rem;
-}
+.auth-logo { text-align: center; margin-bottom: 2rem; }
 .auth-logo-sym {
     font-family: 'Playfair Display', serif;
     font-size: 1.1rem;
@@ -99,27 +98,7 @@ require_once __DIR__ . '/../includes/header.php';
     text-align: center;
     margin-bottom: 2rem;
 }
-.auth-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 1.8rem;
-}
-.auth-divider::before, .auth-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(45,74,45,0.12);
-}
-.auth-divider span {
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #9aaa9a;
-}
-.form-group {
-    margin-bottom: 1.1rem;
-}
+.form-group { margin-bottom: 1.1rem; }
 .form-label {
     display: block;
     font-size: 0.78rem;
@@ -150,11 +129,6 @@ require_once __DIR__ . '/../includes/header.php';
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-.form-row-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
     gap: 12px;
 }
 .form-check-ttt {
@@ -212,14 +186,9 @@ require_once __DIR__ . '/../includes/header.php';
     border: 1px solid #f0c0c0;
     color: #8b2020;
 }
-.alert-ok {
-    background: #f0fdf0;
-    border: 1px solid #c0e0c0;
-    color: #1a4a1a;
-}
 @media (max-width: 480px) {
     .auth-card { padding: 2rem 1.2rem; }
-    .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
 }
 </style>
 
