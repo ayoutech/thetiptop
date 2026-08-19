@@ -1,11 +1,14 @@
 <?php
-$page_title = 'Mon Compte — Thé Tip Top';
-require_once __DIR__ . '/../includes/header.php';
-
-if (!$user) {
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id'])) {
     header('Location: /pages/connexion.php');
     exit;
 }
+
+$page_title = 'Mon Compte — Thé Tip Top';
+require_once __DIR__ . '/../includes/header.php';
 
 $db = getDB();
 $stmt = $db->prepare("SELECT * FROM tickets WHERE user_id = ? ORDER BY date_utilisation DESC");
@@ -64,11 +67,7 @@ $tirage = $stmt2->fetch();
     color: var(--vert-nuit);
     margin-bottom: 0.2rem;
 }
-.profil-email {
-    font-size: 0.78rem;
-    color: #6a7f6a;
-    margin-bottom: 1rem;
-}
+.profil-email { font-size: 0.78rem; color: #6a7f6a; margin-bottom: 1rem; }
 .profil-stat {
     display: flex;
     justify-content: space-between;
@@ -116,16 +115,8 @@ $tirage = $stmt2->fetch();
     font-size: 1.3rem;
     flex-shrink: 0;
 }
-.ticket-nom {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--vert-nuit);
-}
-.ticket-meta {
-    font-size: 0.75rem;
-    color: #9aaa9a;
-    margin-top: 2px;
-}
+.ticket-nom { font-weight: 600; font-size: 0.9rem; color: var(--vert-nuit); }
+.ticket-meta { font-size: 0.75rem; color: #9aaa9a; margin-top: 2px; }
 .ticket-badge {
     margin-left: auto;
     font-size: 0.68rem;
@@ -153,7 +144,6 @@ $tirage = $stmt2->fetch();
 
 <section class="compte-section">
     <div class="compte-grid">
-        <!-- Profil -->
         <div class="profil-card">
             <div class="profil-avatar">
                 <?= strtoupper(substr($user['prenom'], 0, 1)) ?>
@@ -172,20 +162,20 @@ $tirage = $stmt2->fetch();
                 <span class="tirage-badge">✦ Inscrit au tirage final</span>
             <?php endif; ?>
             <div style="margin-top: 1.2rem;">
-                <a href="/pages/participation.php" class="btn-primary-ttt" style="display:block; text-align:center; font-size:0.75rem; padding: 10px;">
+                <a href="/pages/participation.php" class="btn-primary-ttt"
+                   style="display:block; text-align:center; font-size:0.75rem; padding: 10px;">
                     + Entrer un code
                 </a>
             </div>
         </div>
 
-        <!-- Historique -->
         <div>
             <div class="historique-titre">Mes gains</div>
-
             <?php if (empty($tickets)): ?>
                 <div class="empty-state">
                     <div class="empty-icon">🎟️</div>
-                    <p>Vous n'avez pas encore utilisé de code.<br>Entrez votre code de ticket de caisse pour découvrir votre gain.</p>
+                    <p>Vous n'avez pas encore utilisé de code.<br>
+                    Entrez votre code de ticket de caisse pour découvrir votre gain.</p>
                     <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon premier code</a>
                 </div>
             <?php else: ?>
