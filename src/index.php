@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $page_title = 'Thé Tip Top — Jeu-Concours 100% Gagnant | Thés du Sahara Marocain';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -9,7 +11,6 @@ require_once __DIR__ . '/includes/header.php';
     <div class="hero-bg-gradient"></div>
     <div class="hero-grid-pattern"></div>
 
-    <!-- Visuel droit -->
     <div class="hero-visual">
         <div class="hero-img-wrapper">
             <div class="hero-circle hc1"></div>
@@ -29,7 +30,6 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <!-- Contenu gauche -->
     <div class="hero-content">
         <div class="hero-eyebrow">Ouverture 10e boutique — Nice</div>
 
@@ -47,7 +47,11 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="hero-btns">
             <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
-            <a href="/pages/inscription.php" class="btn-ghost-ttt">S'inscrire gratuitement</a>
+            <?php if (!$is_logged): ?>
+                <a href="/pages/inscription.php" class="btn-ghost-ttt">S'inscrire gratuitement</a>
+            <?php else: ?>
+                <a href="/pages/mon-compte.php" class="btn-ghost-ttt">Mon compte</a>
+            <?php endif; ?>
         </div>
 
         <div class="hero-stats">
@@ -213,8 +217,6 @@ require_once __DIR__ . '/includes/header.php';
             <div class="lot-name">Tirage au sort</div>
             <p class="lot-desc">Tirage parmi tous les participants pour des lots supplémentaires.</p>
         </div>
-
-        <!-- GRAND PRIX -->
         <div class="lot-card grand-prix">
             <div>
                 <div class="grand-prix-badge">✦ Grand Prix</div>
@@ -281,7 +283,11 @@ require_once __DIR__ . '/includes/header.php';
     <p class="cta-sub">10e boutique Nice · 30 jours · 500 000 gagnants</p>
     <div class="cta-btns">
         <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
-        <a href="/pages/inscription.php" class="btn-ghost-ttt">Créer un compte</a>
+        <?php if (!$is_logged): ?>
+            <a href="/pages/inscription.php" class="btn-ghost-ttt">Créer un compte</a>
+        <?php else: ?>
+            <a href="/pages/mon-compte.php" class="btn-ghost-ttt">Mon compte</a>
+        <?php endif; ?>
     </div>
 </section>
 
