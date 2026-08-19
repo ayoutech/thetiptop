@@ -1,6 +1,23 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $page_title = $page_title ?? 'Thé Tip Top — Jeu-Concours 100% Gagnant';
 $is_logged = isset($_SESSION['user_id']);
+
+// Définir $user global pour toutes les pages
+$user = null;
+if ($is_logged) {
+    require_once __DIR__ . '/../config/database.php';
+    $db = getDB();
+    $stmt = $db->prepare('SELECT * FROM users WHERE id = ?');
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user) {
+        session_destroy();
+        $is_logged = false;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
