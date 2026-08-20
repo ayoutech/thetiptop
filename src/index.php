@@ -46,9 +46,15 @@ require_once __DIR__ . '/includes/header.php';
         </p>
 
         <div class="hero-btns">
-            <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
+            <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+                <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
+            <?php endif; ?>
             <?php if (!$is_logged): ?>
                 <a href="/pages/inscription.php" class="btn-ghost-ttt">S'inscrire gratuitement</a>
+            <?php elseif ($user && $user['role'] === 'admin'): ?>
+                <a href="/pages/admin.php" class="btn-ghost-ttt">Administration</a>
+            <?php elseif ($user && $user['role'] === 'employe'): ?>
+                <a href="/pages/employe.php" class="btn-ghost-ttt">Espace boutique</a>
             <?php else: ?>
                 <a href="/pages/mon-compte.php" class="btn-ghost-ttt">Mon compte</a>
             <?php endif; ?>
@@ -168,7 +174,9 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code maintenant</a>
+    <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+        <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code maintenant</a>
+    <?php endif; ?>
 </section>
 
 <!-- ===================== LES LOTS ===================== -->
@@ -232,9 +240,11 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <div style="text-align:center; margin-top:2.5rem;">
-        <a href="/pages/participation.php" class="btn-primary-ttt">Participer maintenant</a>
-    </div>
+    <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+        <div style="text-align:center; margin-top:2.5rem;">
+            <a href="/pages/participation.php" class="btn-primary-ttt">Participer maintenant</a>
+        </div>
+    <?php endif; ?>
 </section>
 
 <!-- ===================== 10e BOUTIQUE NICE ===================== -->
@@ -282,9 +292,15 @@ require_once __DIR__ . '/includes/header.php';
     </h2>
     <p class="cta-sub">10e boutique Nice · 30 jours · 500 000 gagnants</p>
     <div class="cta-btns">
-        <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
+        <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+            <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
+        <?php endif; ?>
         <?php if (!$is_logged): ?>
             <a href="/pages/inscription.php" class="btn-ghost-ttt">Créer un compte</a>
+        <?php elseif ($user && $user['role'] === 'admin'): ?>
+            <a href="/pages/admin.php" class="btn-ghost-ttt">Administration</a>
+        <?php elseif ($user && $user['role'] === 'employe'): ?>
+            <a href="/pages/employe.php" class="btn-ghost-ttt">Espace boutique</a>
         <?php else: ?>
             <a href="/pages/mon-compte.php" class="btn-ghost-ttt">Mon compte</a>
         <?php endif; ?>
