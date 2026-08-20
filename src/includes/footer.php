@@ -36,7 +36,18 @@
             <div class="footer-heading">Navigation</div>
             <ul class="footer-nav">
                 <li><a href="/">Accueil</a></li>
-                <li><a href="/pages/participation.php">Participer</a></li>
+                <?php if (!isset($is_logged) || !$is_logged || (isset($user) && $user && $user['role'] === 'client')): ?>
+                    <li><a href="/pages/participation.php">Participer</a></li>
+                <?php endif; ?>
+                <?php if (isset($is_logged) && $is_logged && isset($user) && $user): ?>
+                    <?php if ($user['role'] === 'admin'): ?>
+                        <li><a href="/pages/admin.php">Administration</a></li>
+                    <?php elseif ($user['role'] === 'employe'): ?>
+                        <li><a href="/pages/employe.php">Espace boutique</a></li>
+                    <?php else: ?>
+                        <li><a href="/pages/mon-compte.php">Mon compte</a></li>
+                    <?php endif; ?>
+                <?php endif; ?>
                 <li><a href="/pages/reglement.php">Règlement</a></li>
                 <li><a href="/pages/mentions-legales.php">Mentions légales</a></li>
                 <li><a href="/pages/confidentialite.php">Confidentialité</a></li>
