@@ -5,7 +5,6 @@ if (session_status() === PHP_SESSION_NONE) {
 $page_title = $page_title ?? 'Thé Tip Top — Jeu-Concours 100% Gagnant';
 $is_logged = isset($_SESSION['user_id']);
 
-// Définir $user global pour toutes les pages
 $user = null;
 if ($is_logged) {
     require_once __DIR__ . '/../config/database.php';
@@ -30,6 +29,14 @@ if ($is_logged) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW2TK99XK2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-WW2TK99XK2');
+    </script>
 </head>
 <body>
 
