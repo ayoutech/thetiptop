@@ -10,6 +10,13 @@ if (!isset($_SESSION['user_id'])) {
 $page_title = 'Participer — Thé Tip Top';
 require_once __DIR__ . '/../includes/header.php';
 
+// Bloquer admin et employé
+if ($user && in_array($user['role'], ['admin', 'employe'])) {
+    $redirect = $user['role'] === 'admin' ? '/pages/admin.php' : '/pages/employe.php';
+    header('Location: ' . $redirect);
+    exit;
+}
+
 $error = '';
 $gain = null;
 $gains_labels = [
@@ -163,7 +170,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 .part-footer a { color: var(--or); text-decoration: none; }
 
-/* GAIN */
 .gain-section {
     min-height: calc(100vh - 68px);
     background: var(--blanc-casse);

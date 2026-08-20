@@ -51,13 +51,21 @@ if ($is_logged) {
         <li><a href="/">Accueil</a></li>
         <li><a href="/pages/participation.php">Participer</a></li>
         <?php if ($is_logged): ?>
-            <li><a href="/pages/mon-compte.php">Mon compte</a></li>
+            <?php if ($user && $user['role'] === 'admin'): ?>
+                <li><a href="/pages/admin.php">Administration</a></li>
+            <?php elseif ($user && $user['role'] === 'employe'): ?>
+                <li><a href="/pages/employe.php">Espace boutique</a></li>
+            <?php else: ?>
+                <li><a href="/pages/mon-compte.php">Mon compte</a></li>
+            <?php endif; ?>
             <li><a href="/pages/deconnexion.php">Déconnexion</a></li>
         <?php else: ?>
             <li><a href="/pages/connexion.php">Connexion</a></li>
             <li><a href="/pages/inscription.php">S'inscrire</a></li>
         <?php endif; ?>
-        <li><a href="/pages/participation.php" class="btn-nav-cta">Entrer mon code</a></li>
+        <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+            <li><a href="/pages/participation.php" class="btn-nav-cta">Entrer mon code</a></li>
+        <?php endif; ?>
     </ul>
 
     <button class="ttt-hamburger" id="hamburger" aria-label="Menu">
@@ -72,11 +80,19 @@ if ($is_logged) {
     <a href="/">Accueil</a>
     <a href="/pages/participation.php">Participer</a>
     <?php if ($is_logged): ?>
-        <a href="/pages/mon-compte.php">Mon compte</a>
+        <?php if ($user && $user['role'] === 'admin'): ?>
+            <a href="/pages/admin.php">Administration</a>
+        <?php elseif ($user && $user['role'] === 'employe'): ?>
+            <a href="/pages/employe.php">Espace boutique</a>
+        <?php else: ?>
+            <a href="/pages/mon-compte.php">Mon compte</a>
+        <?php endif; ?>
         <a href="/pages/deconnexion.php">Déconnexion</a>
     <?php else: ?>
         <a href="/pages/connexion.php">Connexion</a>
         <a href="/pages/inscription.php">S'inscrire</a>
     <?php endif; ?>
-    <a href="/pages/participation.php" style="color: var(--or) !important; font-weight: 700;">→ Entrer mon code</a>
+    <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+        <a href="/pages/participation.php" style="color: var(--or) !important; font-weight: 700;">→ Entrer mon code</a>
+    <?php endif; ?>
 </div>
