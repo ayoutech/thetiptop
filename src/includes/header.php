@@ -49,7 +49,9 @@ if ($is_logged) {
 
     <ul class="ttt-nav-links">
         <li><a href="/">Accueil</a></li>
-        <li><a href="/pages/participation.php">Participer</a></li>
+        <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+            <li><a href="/pages/participation.php">Participer</a></li>
+        <?php endif; ?>
         <?php if ($is_logged): ?>
             <?php if ($user && $user['role'] === 'admin'): ?>
                 <li><a href="/pages/admin.php">Administration</a></li>
@@ -78,7 +80,9 @@ if ($is_logged) {
 <!-- MENU MOBILE -->
 <div class="ttt-mobile-menu" id="mobileMenu">
     <a href="/">Accueil</a>
-    <a href="/pages/participation.php">Participer</a>
+    <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
+        <a href="/pages/participation.php">Participer</a>
+    <?php endif; ?>
     <?php if ($is_logged): ?>
         <?php if ($user && $user['role'] === 'admin'): ?>
             <a href="/pages/admin.php">Administration</a>
