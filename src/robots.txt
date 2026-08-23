@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /pages/admin.php
+Disallow: /pages/employe.php
+Disallow: /pages/tirage.php
+Disallow: /pages/mon-compte.php
+Disallow: /config/
+
+Sitemap: https://thetiptop.onrender.com/sitemap.xml

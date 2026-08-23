@@ -55,6 +55,7 @@ if ($is_logged) {
         <?php if ($is_logged): ?>
             <?php if ($user && $user['role'] === 'admin'): ?>
                 <li><a href="/pages/admin.php">Administration</a></li>
+                <li><a href="/pages/tirage.php">Tirage au sort</a></li>
             <?php elseif ($user && $user['role'] === 'employe'): ?>
                 <li><a href="/pages/employe.php">Espace boutique</a></li>
             <?php else: ?>
