@@ -15,8 +15,8 @@
                 <span style="color: var(--or);">☽</span> Thé Tip Top
             </div>
             <p class="footer-tagline">
-                Thés bio et handmade du Sahara marocain.<br>
-                Tradition berbère, qualité premium, jeu-concours 100% gagnant.
+                Thés bio et handmade d'exception.<br>
+                Qualité premium, jeu-concours 100% gagnant.
             </p>
             <div style="margin-top: 1.2rem; display: flex; gap: 12px;">
                 <a href="https://instagram.com/thetiptop_officiel" target="_blank" rel="noopener"
@@ -56,7 +56,7 @@
         <div>
             <div class="footer-heading">Notre histoire</div>
             <p class="footer-tagline">
-                    Une sélection de thés bio et handmade, préparés avec exigence pour un rituel sensoriel unique.
+                Une sélection de thés bio et handmade, préparés avec exigence pour un rituel sensoriel unique.
             </p>
             <p class="footer-tagline" style="margin-top: 0.8rem; font-size: 0.72rem;">
                 Règlement déposé chez Maître Arnaud Rick, huissier de justice.

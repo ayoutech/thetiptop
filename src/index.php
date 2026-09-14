@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$page_title = 'Thé Tip Top — Jeu-Concours 100% Gagnant | Thés Bio Artisanaux';
+$page_title = 'Thé Tip Top — Jeu-Concours 100% Gagnant | Thés Bio Handmade';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -18,7 +18,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="hero-circle hc3"></div>
             <img
                 src="https://images.pexels.com/photos/1638280/pexels-photo-1638280.jpeg?w=400&h=400&fit=crop"
-                alt="Thé artisanal bio"
+                alt="Thé bio handmade"
                 class="hero-photo"
                 loading="eager"
             >
@@ -36,13 +36,13 @@ require_once __DIR__ . '/includes/header.php';
         <h1 class="hero-title">
             Le jeu-concours<br>
             <em>100% gagnant</em><br>
-            de la Côte d'Azur
+            Thé Tip Top
         </h1>
 
         <p class="hero-desc">
             Chaque achat supérieur à 49€ vous offre un code unique.
             Découvrez votre lot et vivez l'expérience Thé Tip Top —
-            thés bio et artisanaux, cultivés avec passion au cœur de la Provence.
+            un rituel sensoriel autour de thés bio et handmade d'exception.
         </p>
 
         <div class="hero-btns">
@@ -86,16 +86,16 @@ require_once __DIR__ . '/includes/header.php';
 <div class="ttt-bandeau" aria-hidden="true">
     <div class="bandeau-track">
         <span class="bandeau-item">🌿 100% Bio <span class="bandeau-sep">·</span></span>
-        <span class="bandeau-item">✋ Artisanal <span class="bandeau-sep">·</span></span>
+        <span class="bandeau-item">✋ Handmade <span class="bandeau-sep">·</span></span>
         <span class="bandeau-item">♻️ Éco-responsable <span class="bandeau-sep">·</span></span>
-        <span class="bandeau-item">🇫🇷 Fabriqué en France <span class="bandeau-sep">·</span></span>
-        <span class="bandeau-item">🌊 Esprit Côte d'Azur <span class="bandeau-sep">·</span></span>
+        <span class="bandeau-item">☕ Rituel sensoriel <span class="bandeau-sep">·</span></span>
+        <span class="bandeau-item">🏙️ 10e boutique à Nice <span class="bandeau-sep">·</span></span>
         <span class="bandeau-item">🏆 500 000 codes gagnants <span class="bandeau-sep">·</span></span>
         <span class="bandeau-item">🌿 100% Bio <span class="bandeau-sep">·</span></span>
-        <span class="bandeau-item">✋ Artisanal <span class="bandeau-sep">·</span></span>
+        <span class="bandeau-item">✋ Handmade <span class="bandeau-sep">·</span></span>
         <span class="bandeau-item">♻️ Éco-responsable <span class="bandeau-sep">·</span></span>
-        <span class="bandeau-item">🇫🇷 Fabriqué en France <span class="bandeau-sep">·</span></span>
-        <span class="bandeau-item">🌊 Esprit Côte d'Azur <span class="bandeau-sep">·</span></span>
+        <span class="bandeau-item">☕ Rituel sensoriel <span class="bandeau-sep">·</span></span>
+        <span class="bandeau-item">🏙️ 10e boutique à Nice <span class="bandeau-sep">·</span></span>
         <span class="bandeau-item">🏆 500 000 codes gagnants <span class="bandeau-sep">·</span></span>
     </div>
 </div>
@@ -104,38 +104,38 @@ require_once __DIR__ . '/includes/header.php';
 <section class="ttt-histoire reveal">
     <div class="histoire-visuel">
         <img
-            src="https://images.pexels.com/photos/1002846/pexels-photo-1002846.jpeg?w=800&h=600&fit=crop"
-            alt="Champs de lavande en Provence"
+            src="https://images.pexels.com/photos/230477/pexels-photo-230477.jpeg?w=800&h=600&fit=crop"
+            alt="Préparation artisanale du thé"
             loading="lazy"
         >
         <div class="histoire-visuel-overlay">
             <div class="histoire-badge-mini">
-                <div class="badge-titre">Né en Provence</div>
-                <div class="badge-sub">Tradition artisanale française</div>
+                <div class="badge-titre">Bio & Handmade</div>
+                <div class="badge-sub">Depuis toujours</div>
             </div>
         </div>
     </div>
     <div class="histoire-texte">
         <div class="section-eyebrow">Notre histoire</div>
         <h2 class="section-title">
-            Des champs de Provence<br>à <em>Nice</em>
+            L'art du thé,<br>façonné à <em>Nice</em>
         </h2>
         <p class="section-body">
-            L'histoire de Thé Tip Top commence dans les collines de Provence, entre lavande
-            et oliviers, où nos artisans sélectionnent chaque plante avec exigence. Inspirés
-            par les traditions herboristes du sud de la France, nous préparons chaque mélange
-            à la main, selon des méthodes transmises de génération en génération.
+            Depuis toujours, Thé Tip Top sélectionne des thés de très grande qualité :
+            mélanges signatures, thés détox, thés blancs, thés aux légumes et infusions.
+            Chaque gamme est certifiée bio et préparée à la main par nos artisans, dans
+            le respect d'un savoir-faire exigeant.
         </p>
         <p class="section-body" style="margin-top: -0.8rem;">
-            Des jardins bio du Var aux rivages de la Méditerranée, nous sélectionnons les
-            feuilles les plus nobles, récoltées à la main pour préserver tous leurs arômes
-            et leur fraîcheur.
+            À l'occasion de l'ouverture de notre 10e boutique à Nice, nous transformons
+            chaque achat en un rituel sensoriel : la vapeur qui s'élève, l'arôme des
+            feuilles, le geste artisanal derrière chaque coffret.
         </p>
         <div class="badges-row">
-            <span class="badge-pill">🇫🇷 Origine France</span>
             <span class="badge-pill">🌿 Bio certifié</span>
-            <span class="badge-pill">✋ Artisanal</span>
+            <span class="badge-pill">✋ Handmade</span>
             <span class="badge-pill">♻️ RSE</span>
+            <span class="badge-pill">🏙️ Nice</span>
         </div>
     </div>
 </section>
@@ -200,13 +200,13 @@ require_once __DIR__ . '/includes/header.php';
             <span class="lot-icon-em">🌿</span>
             <div class="lot-pct">20%</div>
             <div class="lot-name">Thé détox 100g</div>
-            <p class="lot-desc">Une boîte de 100g d'un thé détox ou d'infusion bio de Provence.</p>
+            <p class="lot-desc">Une boîte de 100g d'un thé détox ou d'infusion bio.</p>
         </div>
         <div class="lot-card">
             <span class="lot-icon-em">⭐</span>
             <div class="lot-pct">10%</div>
             <div class="lot-name">Thé signature 100g</div>
-            <p class="lot-desc">Un de nos mélanges signatures exclusifs, artisanal.</p>
+            <p class="lot-desc">Un de nos mélanges signatures exclusifs, handmade.</p>
         </div>
         <div class="lot-card">
             <span class="lot-icon-em">🎁</span>
@@ -235,7 +235,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="lot-name">Un an de thé offert</div>
                 <p class="lot-desc">
                     Valeur 360€ — Tirage au sort parmi tous les participants.
-                    Le lot ultime pour les vrais amateurs de thé bio artisanal.
+                    Le lot ultime pour les vrais amateurs de thé bio handmade.
                 </p>
             </div>
         </div>
@@ -253,12 +253,12 @@ require_once __DIR__ . '/includes/header.php';
     <div class="boutique-texte">
         <div class="section-eyebrow">Notre 10e boutique</div>
         <h2 class="section-title" style="color: var(--creme);">
-            L'art du thé bio<br>à <em style="color: var(--or-clair);">Nice</em>
+            Le rituel du thé bio<br>à <em style="color: var(--or-clair);">Nice</em>
         </h2>
         <ul class="boutique-list">
-            <li>Mélanges signatures exclusifs de Provence</li>
+            <li>Mélanges signatures exclusifs</li>
             <li>100% Bio — certifié par des organismes indépendants</li>
-            <li>Artisanal — préparé à la main par nos artisans</li>
+            <li>Handmade — préparé à la main par nos artisans</li>
             <li>Démarche RSE et éco-responsable</li>
         </ul>
         <div class="boutique-mini-stats">
@@ -278,7 +278,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
     <div class="boutique-visuel">
         <img
-            src="https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg?w=800&h=600&fit=crop"
+            src="https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?w=800&h=600&fit=crop"
             alt="Boutique Thé Tip Top Nice"
             loading="lazy"
         >
