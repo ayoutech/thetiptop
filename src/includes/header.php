@@ -23,7 +23,7 @@ if ($is_logged) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Thé Tip Top — Thés bio et handmade du Sahara marocain. Participez au jeu-concours 100% gagnant pour l'ouverture de notre 10e boutique à Nice.">
+    <meta name="description" content="Thé Tip Top — Thés bio et handmade. Participez au jeu-concours 100% gagnant pour l'ouverture de notre 10e boutique à Nice.">
     <title><?= htmlspecialchars($page_title) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

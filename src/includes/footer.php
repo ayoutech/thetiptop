@@ -56,7 +56,7 @@
         <div>
             <div class="footer-heading">Notre histoire</div>
             <p class="footer-tagline">
-                Nés au cœur des médinas de Marrakech et Fès, nos thés racontent l'histoire des peuples du désert.
+                    Une sélection de thés bio et handmade, préparés avec exigence pour un rituel sensoriel unique.
             </p>
             <p class="footer-tagline" style="margin-top: 0.8rem; font-size: 0.72rem;">
                 Règlement déposé chez Maître Arnaud Rick, huissier de justice.
