@@ -205,7 +205,7 @@ $tirage = $stmt2->fetch();
     </div>
 </section>
 <!-- ZONE DANGER -->
-<section style="max-width: 900px; margin: 3rem auto 0; padding: 0 1.5rem;">
+<section style="max-width: 900px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
     <div style="background: #fdf0f0; border: 1px solid #f0c0c0; border-radius: 4px; padding: 1.5rem 2rem;">
         <h3 style="font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #8b2020; margin-bottom: 0.5rem;">Zone de danger</h3>
         <p style="font-size: 0.85rem; color: #6a4040; margin-bottom: 1.2rem;">
