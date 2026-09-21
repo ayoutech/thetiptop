@@ -68,7 +68,7 @@ if ($is_logged) {
             <li><a href="/pages/inscription.php">S'inscrire</a></li>
         <?php endif; ?>
         <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
-            <li><a href="/pages/participation.php" class="btn-nav-cta">Entrer mon code</a></li>
+            <li><a href="/pages/participation.php" class="btn-nav-cta">Je participe</a></li>
         <?php endif; ?>
     </ul>
 
@@ -100,6 +100,6 @@ if ($is_logged) {
         <a href="/pages/inscription.php">S'inscrire</a>
     <?php endif; ?>
     <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
-        <a href="/pages/participation.php" style="color: var(--or) !important; font-weight: 700;">→ Entrer mon code</a>
+        <a href="/pages/participation.php" style="color: var(--or) !important; font-weight: 700;">→ Je participe</a>
     <?php endif; ?>
 </div>

@@ -92,7 +92,7 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="hero-btns">
             <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
-                <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
+                <a href="/pages/participation.php" class="btn-primary-ttt">Je participe</a>
             <?php endif; ?>
             <?php if (!$is_logged): ?>
                 <a href="/pages/inscription.php" class="btn-ghost-ttt">S'inscrire gratuitement</a>
@@ -221,7 +221,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
-        <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code maintenant</a>
+        <a href="/pages/participation.php" class="btn-primary-ttt">Je participe maintenant</a>
     <?php endif; ?>
 </section>
 
@@ -339,7 +339,7 @@ require_once __DIR__ . '/includes/header.php';
     <p class="cta-sub">10e boutique Nice · 30 jours · 500 000 gagnants</p>
     <div class="cta-btns">
         <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
-            <a href="/pages/participation.php" class="btn-primary-ttt">Entrer mon code</a>
+            <a href="/pages/participation.php" class="btn-primary-ttt">Je participe</a>
         <?php endif; ?>
         <?php if (!$is_logged): ?>
             <a href="/pages/inscription.php" class="btn-ghost-ttt">Créer un compte</a>

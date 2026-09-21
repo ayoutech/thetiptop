@@ -287,7 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php else: ?>
 <section class="participation-section">
     <div class="participation-card">
-        <h1 class="part-title">Entrer mon code</h1>
+        <h1 class="part-title">Je participe</h1>
         <p class="part-sub">Trouvez votre code à 10 caractères sur votre ticket de caisse (achat &gt; 49€)</p>
 
         <?php if ($error): ?>
