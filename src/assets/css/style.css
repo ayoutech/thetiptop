@@ -364,6 +364,65 @@ body {
     50% { transform: translateX(-50%) translateY(6px); }
 }
 
+/* ===================== HERO VISUEL GAMIFIÉ ===================== */
+.hero-winner-badge {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    z-index: 5;
+    background: var(--or);
+    color: var(--vert-nuit);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    transform: rotate(8deg);
+    animation: badgePulse 2.4s ease-in-out infinite;
+    white-space: nowrap;
+}
+@keyframes badgePulse {
+    0%, 100% { transform: rotate(8deg) scale(1); }
+    50% { transform: rotate(8deg) scale(1.08); }
+}
+.prize-float {
+    position: absolute;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--creme);
+    border: 2px solid var(--or);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 4;
+    animation: floatPrize 4s ease-in-out infinite;
+}
+.prize-float.p1 { top: -20px; left: -30px; animation-delay: 0s; }
+.prize-float.p2 { bottom: 10px; left: -45px; animation-delay: 0.8s; }
+.prize-float.p3 { bottom: -25px; right: 30px; animation-delay: 1.6s; }
+.prize-float.p4 { top: 20px; right: -40px; animation-delay: 2.4s; width: 46px; height: 46px; font-size: 1.25rem; }
+@keyframes floatPrize {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-14px) rotate(-6deg); }
+}
+.sparkle {
+    position: absolute;
+    color: var(--or-clair);
+    font-size: 1.1rem;
+    z-index: 4;
+    animation: sparkleTwinkle 2.2s ease-in-out infinite;
+    pointer-events: none;
+}
+.sparkle.s1 { top: 5%; left: 55%; animation-delay: 0s; }
+.sparkle.s2 { top: 65%; left: 90%; animation-delay: 0.7s; }
+.sparkle.s3 { top: 85%; left: 15%; animation-delay: 1.3s; font-size: 0.9rem; }
+.sparkle.s4 { top: 15%; left: 5%; animation-delay: 1.9s; font-size: 0.85rem; }
+@keyframes sparkleTwinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.1) rotate(90deg); }
+}
+
 /* ===================== BANDEAU ===================== */
 .ttt-bandeau {
     background: var(--or);
@@ -766,6 +825,50 @@ body {
 }
 .cta-btns { display: flex; gap: 1rem; justify-content: center; position: relative; }
 
+/* ===================== NEWSLETTER TEASER (footer) ===================== */
+.newsletter-section {
+    background: var(--creme-fonce);
+    padding: 4rem 1.5rem;
+    text-align: center;
+}
+.newsletter-inner { max-width: 560px; margin: 0 auto; }
+.newsletter-icon {
+    width: 56px; height: 56px;
+    background: var(--vert-nuit);
+    color: var(--or);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1.2rem;
+}
+.newsletter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--vert-nuit);
+    margin-bottom: 0.6rem;
+}
+.newsletter-sub {
+    font-size: 0.9rem;
+    color: #5a6e4a;
+    line-height: 1.6;
+    margin-bottom: 1.8rem;
+}
+.newsletter-btn {
+    background: var(--vert-nuit);
+    color: var(--creme);
+    padding: 13px 28px;
+    border: none;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.newsletter-btn:hover { background: var(--or); color: var(--vert-nuit); }
+
 /* ===================== FOOTER ===================== */
 .ttt-footer {
     background: #111D11;
@@ -824,6 +927,22 @@ body {
 }
 .footer-copy strong { color: var(--or); }
 
+/* ===================== SOCIAL ICONS ===================== */
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(245,237,214,0.25);
+    transition: all 0.2s;
+}
+.social-icon:hover {
+    border-color: var(--or);
+    background: rgba(201,168,76,0.1);
+}
+
 /* ===================== COOKIE ===================== */
 .cookie-banner {
     display: none;
@@ -833,7 +952,6 @@ body {
     border-top: 2px solid var(--or);
     z-index: 9999;
     padding: 1rem 2rem;
-    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
@@ -852,6 +970,22 @@ body {
     border-radius: 2px;
     cursor: pointer;
     white-space: nowrap;
+}
+.btn-cookie-refuser {
+    background: transparent;
+    color: rgba(245,237,214,0.7);
+    border: 1px solid rgba(245,237,214,0.3);
+    padding: 8px 22px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.btn-cookie-refuser:hover {
+    border-color: var(--or);
+    color: var(--or);
 }
 
 /* ===================== SCROLL REVEAL ===================== */
@@ -913,4 +1047,8 @@ body {
     .section-title { font-size: 1.7rem; }
     .section-title-light { font-size: 1.8rem; }
     .hero-title { font-size: 2.2rem; }
+
+    .prize-float { width: 42px; height: 42px; font-size: 1.1rem; }
+    .prize-float.p4 { width: 36px; height: 36px; font-size: 1rem; }
+    .hero-winner-badge { font-size: 0.62rem; padding: 6px 12px; }
 }
