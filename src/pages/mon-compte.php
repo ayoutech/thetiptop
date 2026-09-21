@@ -204,5 +204,19 @@ $tirage = $stmt2->fetch();
         </div>
     </div>
 </section>
+<!-- ZONE DANGER -->
+<section style="max-width: 900px; margin: 3rem auto 0; padding: 0 1.5rem;">
+    <div style="background: #fdf0f0; border: 1px solid #f0c0c0; border-radius: 4px; padding: 1.5rem 2rem;">
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #8b2020; margin-bottom: 0.5rem;">Zone de danger</h3>
+        <p style="font-size: 0.85rem; color: #6a4040; margin-bottom: 1.2rem;">
+            La suppression de votre compte est définitive et irréversible. Vos gains et votre historique seront perdus.
+        </p>
+        <form method="POST" action="/pages/supprimer-compte.php" onsubmit="return confirm('Êtes-vous vraiment sûr(e) de vouloir supprimer votre compte ? Cette action est irréversible.');">
+            <button type="submit" style="background: #8b2020; color: #fff; border: none; padding: 10px 24px; border-radius: 2px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;">
+                Supprimer mon compte
+            </button>
+        </form>
+    </div>
+</section>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
