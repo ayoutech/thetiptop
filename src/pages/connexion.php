@@ -1,5 +1,7 @@
 <?php ob_start();
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (isset($_SESSION['user_id'])) {
     header('Location: /pages/mon-compte.php');
     exit;
@@ -157,14 +159,11 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="auth-logo">
             <div class="auth-logo-sym"><span>☽</span> Thé Tip Top</div>
         </div>
-
         <h1 class="auth-title">Connexion</h1>
         <p class="auth-sub">Accédez à votre espace participant</p>
-
         <?php if ($erreur): ?>
             <div class="alert-ttt alert-erreur"><?= htmlspecialchars($erreur) ?></div>
         <?php endif; ?>
-
         <form method="POST" action="">
             <div class="form-group">
                 <label class="form-label">Adresse email</label>
@@ -172,16 +171,13 @@ require_once __DIR__ . '/../includes/header.php';
                        placeholder="marie@exemple.fr" required
                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
             </div>
-
             <div class="form-group">
                 <label class="form-label">Mot de passe</label>
                 <input type="password" name="mot_de_passe" class="form-control-ttt"
                        placeholder="Votre mot de passe" required>
             </div>
-
             <button type="submit" class="btn-submit-ttt">Se connecter</button>
         </form>
-
         <div class="auth-footer">
             Pas encore de compte ? <a href="/pages/inscription.php">S'inscrire gratuitement</a>
         </div>

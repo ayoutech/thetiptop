@@ -4,8 +4,21 @@
         Nous utilisons des cookies pour améliorer votre expérience.
         <a href="/pages/mentions-legales.php">En savoir plus</a>
     </p>
-    <button class="btn-cookie" onclick="acceptCookies()">Accepter</button>
+    <div style="display: flex; gap: 10px; flex-shrink: 0;">
+        <button class="btn-cookie-refuser" onclick="refuseCookies()">Refuser</button>
+        <button class="btn-cookie" onclick="acceptCookies()">Accepter</button>
+    </div>
 </div>
+
+<!-- NEWSLETTER TEASER -->
+<section class="newsletter-section">
+    <div class="newsletter-inner">
+        <div class="newsletter-icon">✉</div>
+        <h3 class="newsletter-title">Ne manquez aucun lot</h3>
+        <p class="newsletter-sub">Recevez nos actualités et les prochains jeux-concours par email.</p>
+        <a href="/pages/newsletter.php" class="newsletter-btn" style="text-decoration:none; display:inline-block;">S'inscrire</a>
+    </div>
+</section>
 
 <!-- FOOTER -->
 <footer class="ttt-footer">
@@ -18,17 +31,20 @@
                 Thés bio et handmade d'exception.<br>
                 Qualité premium, jeu-concours 100% gagnant.
             </p>
-            <div style="margin-top: 1.2rem; display: flex; gap: 12px;">
-                <a href="https://instagram.com/thetiptop_officiel" target="_blank" rel="noopener"
-                   style="font-size: 0.72rem; color: rgba(245,237,214,0.35); text-decoration: none; transition: color 0.2s;"
-                   onmouseover="this.style.color='var(--or)'" onmouseout="this.style.color='rgba(245,237,214,0.35)'">
-                    Instagram
+            <div style="margin-top: 1.2rem; display: flex; gap: 14px; align-items: center;">
+                <a href="https://www.instagram.com/thetiptopoffi/" target="_blank" rel="noopener"
+                   aria-label="Instagram Thé Tip Top" class="social-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="20" height="20" rx="5" stroke="#F5EDD6" stroke-width="1.8"/>
+                        <circle cx="12" cy="12" r="4.2" stroke="#F5EDD6" stroke-width="1.8"/>
+                        <circle cx="17.3" cy="6.7" r="1.1" fill="#F5EDD6"/>
+                    </svg>
                 </a>
-                <span style="color: rgba(245,237,214,0.15);">·</span>
-                <a href="https://facebook.com/thetiptop" target="_blank" rel="noopener"
-                   style="font-size: 0.72rem; color: rgba(245,237,214,0.35); text-decoration: none; transition: color 0.2s;"
-                   onmouseover="this.style.color='var(--or)'" onmouseout="this.style.color='rgba(245,237,214,0.35)'">
-                    Facebook
+                <a href="https://www.facebook.com/share/1DPCFmBXrv/?mibextid=wwXIfr" target="_blank" rel="noopener"
+                   aria-label="Facebook Thé Tip Top" class="social-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 8.5H17V5.5H15C13.067 5.5 11.5 7.067 11.5 9V11H9.5V14H11.5V19.5H14.5V14H16.5L17 11H14.5V9C14.5 8.724 14.724 8.5 15 8.5Z" fill="#F5EDD6"/>
+                    </svg>
                 </a>
             </div>
         </div>
@@ -51,6 +67,7 @@
                 <li><a href="/pages/reglement.php">Règlement</a></li>
                 <li><a href="/pages/mentions-legales.php">Mentions légales</a></li>
                 <li><a href="/pages/confidentialite.php">Confidentialité</a></li>
+                <li><a href="/pages/newsletter.php">Newsletter</a></li>
             </ul>
         </div>
         <div>
@@ -68,7 +85,9 @@
             &copy; <?= date('Y') ?> Thé Tip Top — Tous droits réservés |
             Réalisé par <strong>G-TECH</strong> (Groupe 6 — DSP5 ARCHI O24A — Agence Furious Ducks)
         </span>
-        <span class="footer-copy">Nice, France</span>
+        <span class="footer-copy">
+            Nice, France · <a href="#" onclick="manageCookies(); return false;" style="color:inherit; text-decoration:underline; opacity:0.7;">Gérer les cookies</a>
+        </span>
     </div>
 </footer>
 

@@ -25,6 +25,7 @@ if ($is_logged) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Thé Tip Top — Thés bio et handmade. Participez au jeu-concours 100% gagnant pour l'ouverture de notre 10e boutique à Nice.">
     <title><?= htmlspecialchars($page_title) ?></title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -87,6 +88,7 @@ if ($is_logged) {
     <?php if ($is_logged): ?>
         <?php if ($user && $user['role'] === 'admin'): ?>
             <a href="/pages/admin.php">Administration</a>
+            <a href="/pages/tirage.php">Tirage au sort</a>
         <?php elseif ($user && $user['role'] === 'employe'): ?>
             <a href="/pages/employe.php">Espace boutique</a>
         <?php else: ?>

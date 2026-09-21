@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const banner = document.getElementById('cookieBanner');
-    if (banner && !localStorage.getItem('ttt_cookies_ok')) {
+    if (banner && !localStorage.getItem('ttt_cookies_choice')) {
         banner.classList.add('visible');
     }
 
@@ -54,13 +54,47 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-// ======= COOKIE ACCEPT =======
+// ======= COOKIES : ACCEPTER =======
 function acceptCookies() {
-    localStorage.setItem('ttt_cookies_ok', '1');
+    localStorage.setItem('ttt_cookies_choice', 'accepted');
+    hideCookieBanner();
+}
+
+// ======= COOKIES : REFUSER =======
+function refuseCookies() {
+    localStorage.setItem('ttt_cookies_choice', 'refused');
+    hideCookieBanner();
+}
+
+// ======= COOKIES : MASQUER LA BANNIÈRE =======
+function hideCookieBanner() {
     const banner = document.getElementById('cookieBanner');
     if (banner) {
         banner.style.transition = 'opacity 0.4s';
         banner.style.opacity = '0';
         setTimeout(function () { banner.remove(); }, 400);
+    }
+}
+
+// ======= COOKIES : ROUVRIR LA GESTION (lien footer) =======
+function manageCookies() {
+    localStorage.removeItem('ttt_cookies_choice');
+    let banner = document.getElementById('cookieBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'cookieBanner';
+        banner.className = 'cookie-banner visible';
+        banner.innerHTML =
+            '<p class="cookie-text">Nous utilisons des cookies pour améliorer votre expérience. ' +
+            '<a href="/pages/mentions-legales.php">En savoir plus</a></p>' +
+            '<div style="display: flex; gap: 10px; flex-shrink: 0;">' +
+            '<button class="btn-cookie-refuser" onclick="refuseCookies()">Refuser</button>' +
+            '<button class="btn-cookie" onclick="acceptCookies()">Accepter</button>' +
+            '</div>';
+        document.body.appendChild(banner);
+    } else {
+        banner.style.display = 'flex';
+        banner.style.opacity = '1';
+        banner.classList.add('visible');
     }
 }
