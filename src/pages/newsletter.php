@@ -130,4 +130,6 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
+<style>.newsletter-section { display: none; }</style>
+
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
