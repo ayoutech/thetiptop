@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $page_title = 'Thé Tip Top — Jeu-Concours 100% Gagnant | Thés Bio Handmade';
 require_once __DIR__ . '/includes/header.php';
 ?>
+<!-- Test webhook -->
 
 <!-- ===================== HERO ===================== -->
 <section class="ttt-hero">
@@ -221,7 +222,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <?php if (!$is_logged || ($user && $user['role'] === 'client')): ?>
-        <a href="/pages/participation.php" class="btn-primary-ttt">Je participe maintenant</a>
+        <a href="/pages/participation.php" class="btn-primary-ttt">Je participe</a>
     <?php endif; ?>
 </section>
 
