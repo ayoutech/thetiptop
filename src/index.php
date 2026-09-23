@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $page_title = 'Thé Tip Top — Jeu-Concours 100% Gagnant | Thés Bio Handmade';
 require_once __DIR__ . '/includes/header.php';
 ?>
-<!-- Test webhook new build -->
+<!-- Test webhook new build test -->
 
 <!-- ===================== HERO ===================== -->
 <section class="ttt-hero">
