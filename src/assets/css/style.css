@@ -52,6 +52,11 @@ body {
 }
 .ttt-logo:hover { color: var(--vert-nuit); }
 .ttt-logo-sym { color: var(--or); font-size: 1.3rem; }
+.ttt-logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
 
 .ttt-nav-links {
     display: flex;
