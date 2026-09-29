@@ -1,59 +1,169 @@
+// Jenkinsfile — Thé Tip Top
+// Pipeline : dev (auto) -> preprod (auto) -> prod (validation humaine + blue/green sur Render)
+// Les secrets (mots de passe, hooks Render, clés API) sont TOUJOURS lus via Jenkins
+// Credentials, jamais codés en dur ni affichés dans les logs.
+//
+// Traçabilité blue/green :
+//   - active_color.txt   : couleur actuellement servie en prod (blue|green), versionnée dans le repo.
+//     Le reverse proxy / la configuration DNS de thetiptop.onrender.com lit ce fichier (ou la
+//     valeur qu'il synchronise) pour savoir vers quel service Render (prod-blue ou prod-green)
+//     router le trafic.
+//   - last_stable_tag.txt: dernier commit déployé avec succès et validé en prod (traçabilité DORA).
+
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'ROLLBACK', defaultValue: false, description: 'Bascule le trafic prod vers la couleur précédente au lieu de déployer')
+    }
+
     environment {
-        IMAGE_NAME = "thetiptop"
-        CONTAINER_NAME = "thetiptop_app"
-        NETWORK_NAME = "furious-network"
+        // --- Base de données (secrets déjà en place, un jeu distinct par environnement) ---
+        DB_PASS_DEV          = credentials('db-pass-dev')
+        DB_PASS_PREPROD      = credentials('db-pass-preprod')
+        DB_PASS_PROD         = credentials('db-pass-prod')
+        API_HMAC_SECRET_PROD = credentials('api-hmac-secret-prod')
+
+        // --- Hooks de déploiement Render (les 4 credentials mises en place pour ce pipeline) ---
+        RENDER_HOOK_DEV      = credentials('render-hook-dev')
+        RENDER_HOOK_PREPROD  = credentials('render-hook-preprod')
+        RENDER_HOOK_PROD_BLUE  = credentials('render-hook-prod-blue')
+        RENDER_HOOK_PROD_GREEN = credentials('render-hook-prod-green')
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('Checkout & Lint') {
             steps {
-                echo 'Récupération du code depuis Gitea...'
                 checkout scm
+                script {
+                    env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                }
+                sh 'php -l src/index.php'
+                sh 'for f in $(find src -name "*.php"); do php -l "$f" || exit 1; done'
             }
         }
 
-        stage('Build') {
+        stage('Tests') {
             steps {
-                echo 'Construction de l image Docker...'
-                sh 'docker build -t ${IMAGE_NAME}:latest .'
+                sh 'php tests/run-http-tests.php'
             }
         }
 
-        stage('Test') {
+        stage('Build image Docker (tests locaux)') {
+            // Render reconstruit lui-même l'image à partir du dépôt Git quand un hook est
+            // appelé ; ce build local sert uniquement à faire tourner les tests d'intégration
+            // dans un conteneur identique à la prod avant de déclencher un déploiement.
             steps {
-                echo 'Exécution des tests...'
-                sh 'docker run --rm ${IMAGE_NAME}:latest php -l /var/www/html/index.php'
-                sh 'docker run --rm ${IMAGE_NAME}:latest php -l /var/www/html/config/database.php'
+                sh "docker build -t thetiptop:${GIT_SHA} ."
+                sh "docker tag thetiptop:${GIT_SHA} thetiptop:current"
             }
         }
 
-        stage('Deploy Dev') {
+        stage('Deploy DEV') {
+            when { branch 'develop' }
             steps {
-                echo 'Déploiement en environnement de développement...'
-                sh 'docker stop ${CONTAINER_NAME} || true'
-                sh 'docker rm ${CONTAINER_NAME} || true'
-                sh 'docker run -d --name ${CONTAINER_NAME} --network ${NETWORK_NAME} -p 8080:80 ${IMAGE_NAME}:latest'
+                sh 'curl -sf -X POST "$RENDER_HOOK_DEV"'
+                sh 'sleep 15 && curl -sf https://thetiptop-dev.onrender.com/healthz'
             }
         }
 
-        stage('Health Check') {
+        stage('Deploy PREPROD') {
+            when { branch 'preprod' }
             steps {
-                echo 'Vérification que le site répond...'
-                sh 'sleep 5'
-                sh 'curl -f http://thetiptop_app:80 || exit 1'
+                sh 'curl -sf -X POST "$RENDER_HOOK_PREPROD"'
+                sh 'sleep 15 && curl -sf https://thetiptop-preprod.onrender.com/healthz'
+                sh 'php tests/run-http-tests.php --target=preprod'
+            }
+        }
+
+        stage('Approbation manuelle PROD') {
+            when {
+                branch 'main'
+                not { expression { return params.ROLLBACK } }
+            }
+            steps {
+                input message: "Déployer ${env.GIT_SHA} en production ?", ok: 'Déployer'
+            }
+        }
+
+        stage('Deploy PROD (blue/green)') {
+            when {
+                branch 'main'
+                not { expression { return params.ROLLBACK } }
+            }
+            steps {
+                script {
+                    def active   = readFile('active_color.txt').trim()
+                    def inactive = (active == 'blue') ? 'green' : 'blue'
+                    def inactiveHook = (inactive == 'green') ? env.RENDER_HOOK_PROD_GREEN : env.RENDER_HOOK_PROD_BLUE
+                    // 'blue' = service Render "thetiptop" (prod historique), 'green' = "thetiptop-green"
+                    def inactiveUrl  = (inactive == 'green') ? 'https://thetiptop-green.onrender.com' : 'https://thetiptop.onrender.com'
+
+                    echo "Couleur active actuelle : ${active} — déploiement de ${env.GIT_SHA} sur ${inactive}"
+
+                    // 1. On déploie la nouvelle version sur la couleur INACTIVE, sans toucher
+                    //    au trafic en cours (qui continue de servir `active`).
+                    sh "curl -sf -X POST '${inactiveHook}'"
+                    sh "sleep 20 && curl -sf ${inactiveUrl}/healthz"
+                    sh "php tests/run-http-tests.php --target=${inactiveUrl}"
+
+                    // 2. Bascule du trafic : la couleur qui vient d'être validée devient active.
+                    //    L'ancienne couleur active reste déployée telle quelle : c'est notre
+                    //    filet de sécurité pour un rollback instantané (pas de redéploiement).
+                    writeFile file: 'active_color.txt', text: inactive
+                    writeFile file: 'last_stable_tag.txt', text: env.GIT_SHA
+                    sh """
+                        git add active_color.txt last_stable_tag.txt
+                        git commit -m "prod: bascule ${active} -> ${inactive} (${env.GIT_SHA})"
+                        git push origin main
+                    """
+                }
+                // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
+                sh '''
+                    LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct) ))
+                    cat <<EOF | curl --data-binary @- http://oracle-vm:9091/metrics/job/dora/env/prod
+                    # TYPE deployments_total counter
+                    deployments_total{env="prod",status="success"} 1
+                    # TYPE lead_time_seconds gauge
+                    lead_time_seconds{env="prod"} ${LEAD_TIME}
+                    EOF
+                '''
+            }
+        }
+
+        stage('Rollback PROD (bascule instantanée)') {
+            when { expression { return params.ROLLBACK == true } }
+            steps {
+                script {
+                    def active   = readFile('active_color.txt').trim()
+                    def previous = (active == 'blue') ? 'green' : 'blue'
+
+                    echo "Rollback : bascule du trafic prod de ${active} vers ${previous} (${previous} sert toujours la dernière version stable connue : ${readFile('last_stable_tag.txt').trim()})"
+
+                    // Pas de redéploiement : la couleur `previous` n'a jamais été touchée par
+                    // le déploiement en échec, elle tourne déjà la version stable précédente.
+                    // Le rollback consiste uniquement à re-basculer le trafic vers elle.
+                    writeFile file: 'active_color.txt', text: previous
+                    sh """
+                        git add active_color.txt
+                        git commit -m "rollback prod: bascule ${active} -> ${previous}"
+                        git push origin main
+                    """
+                }
+                sh '''
+                    cat <<EOF | curl --data-binary @- http://oracle-vm:9091/metrics/job/dora/env/prod
+                    # TYPE deployments_failed_total counter
+                    deployments_failed_total{env="prod"} 1
+                    EOF
+                '''
             }
         }
     }
 
     post {
-        success {
-            echo 'Déploiement réussi !'
-        }
         failure {
-            echo 'Échec du pipeline. Vérifiez les logs.'
+            echo "Pipeline en échec pour ${env.GIT_SHA} — voir les logs Jenkins."
         }
     }
 }
