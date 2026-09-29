@@ -72,18 +72,10 @@ function verify_signed_request(): array
     }
 
         // 5. Vérification de la signature HMAC
+        // 5. Vérification de la signature HMAC
     $body = file_get_contents('php://input');
     $payload = $_SERVER['REQUEST_METHOD'] . '|' . $_SERVER['REQUEST_URI'] . '|' . $timestamp . '|' . $body;
     $expected = hash_hmac('sha256', $payload, API_HMAC_SECRET);
-
-    if (($_SERVER['HTTP_X_DEBUG'] ?? '') === 'ttt2026') {
-        exit(json_encode([
-            'debug_payload' => $payload,
-            'debug_expected' => $expected,
-            'debug_received' => $signature,
-            'debug_secret_prefix' => substr(API_HMAC_SECRET, 0, 8),
-        ]));
-    }
 
     if (!hash_equals($expected, $signature)) {
         log_failed_auth($apiKey, 'signature invalide');
