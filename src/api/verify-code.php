@@ -21,7 +21,7 @@ if (!preg_match('/^[A-Z0-9]{10}$/', $code)) {
     exit;
 }
 
-$stmt = $db->prepare("SELECT code, lot, utilise FROM tickets WHERE code = ?");
+$stmt = $db->prepare("SELECT code, gain, utilise FROM tickets WHERE code = ?");
 $stmt->execute([$code]);
 $ticket = $stmt->fetch();
 
@@ -34,7 +34,7 @@ if (!$ticket) {
 echo json_encode([
     'valid'   => true,
     'utilise' => (bool)$ticket['utilise'],
-    // le lot n'est renvoyé que si le code n'a pas encore été utilisé,
+    // le gain n'est renvoyé que si le code n'a pas encore été utilisé,
     // pour éviter de révéler des informations inutiles via l'API
-    'lot'     => $ticket['utilise'] ? null : $ticket['lot'],
+    'gain'    => $ticket['utilise'] ? null : $ticket['gain'],
 ]);
