@@ -127,8 +127,12 @@ pipeline {
                     sh """
                         git add active_color.txt last_stable_tag.txt
                         git commit -m "prod: bascule ${active} -> ${inactive} (${env.GIT_SHA})"
-                        git push github HEAD:master
                     """
+                    // Le remote "origin" du workspace Jenkins pointe déjà vers GitHub (checkout
+                    // en lecture anonyme) mais push nécessite un token -> credential dédiée.
+                    withCredentials([usernamePassword(credentialsId: 'github-push-token', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
+                        sh 'git push https://$GH_USER:$GH_TOKEN@github.com/ayoutech/thetiptop.git HEAD:master'
+                    }
                 }
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
                 sh '''
@@ -159,8 +163,10 @@ pipeline {
                     sh """
                         git add active_color.txt
                         git commit -m "rollback prod: bascule ${active} -> ${previous}"
-                        git push github HEAD:master
                     """
+                    withCredentials([usernamePassword(credentialsId: 'github-push-token', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
+                        sh 'git push https://$GH_USER:$GH_TOKEN@github.com/ayoutech/thetiptop.git HEAD:master'
+                    }
                 }
                 sh '''
                     cat <<EOF | curl --data-binary @- http://oracle-vm:9091/metrics/job/dora/env/prod
