@@ -127,7 +127,7 @@ pipeline {
                     sh """
                         git add active_color.txt last_stable_tag.txt
                         git commit -m "prod: bascule ${active} -> ${inactive} (${env.GIT_SHA})"
-                        git push github master
+                        git push github HEAD:master
                     """
                 }
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
@@ -159,7 +159,7 @@ pipeline {
                     sh """
                         git add active_color.txt
                         git commit -m "rollback prod: bascule ${active} -> ${previous}"
-                        git push github master
+                        git push github HEAD:master
                     """
                 }
                 sh '''
