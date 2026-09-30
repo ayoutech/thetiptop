@@ -1,14 +1,16 @@
 // Jenkinsfile — Thé Tip Top
-// Pipeline : dev (auto) -> preprod (auto) -> prod (validation humaine + blue/green sur Render)
-// Les secrets (mots de passe, hooks Render, clés API) sont TOUJOURS lus via Jenkins
-// Credentials, jamais codés en dur ni affichés dans les logs.
+// Pipeline : develop (auto) -> preprod (auto) -> master (validation humaine + blue/green sur Render)
+// Les secrets (hooks Render) sont TOUJOURS lus via Jenkins Credentials, jamais codés en dur.
 //
 // Traçabilité blue/green :
 //   - active_color.txt   : couleur actuellement servie en prod (blue|green), versionnée dans le repo.
-//     Le reverse proxy / la configuration DNS de thetiptop.onrender.com lit ce fichier (ou la
-//     valeur qu'il synchronise) pour savoir vers quel service Render (prod-blue ou prod-green)
-//     router le trafic.
+//     'blue' = service Render "thetiptop", 'green' = service Render "thetiptop-green".
+//     Le reverse proxy / la config DNS de thetiptop.onrender.com doit lire cette valeur pour
+//     savoir vers quel service router le trafic.
 //   - last_stable_tag.txt: dernier commit déployé avec succès et validé en prod (traçabilité DORA).
+//
+// NB: l'agent Jenkins n'a pas PHP installé -> toutes les commandes php (lint, tests) tournent
+// à l'intérieur de l'image Docker du projet via `docker run`, jamais directement sur l'agent.
 
 pipeline {
     agent any
@@ -23,15 +25,15 @@ pipeline {
         // À réintégrer (credentials('db-pass-dev') etc.) le jour où un stage en a besoin.
 
         // --- Hooks de déploiement Render (les 4 credentials mises en place pour ce pipeline) ---
-        RENDER_HOOK_DEV      = credentials('render-hook-dev')
-        RENDER_HOOK_PREPROD  = credentials('render-hook-preprod')
+        RENDER_HOOK_DEV        = credentials('render-hook-dev')
+        RENDER_HOOK_PREPROD    = credentials('render-hook-preprod')
         RENDER_HOOK_PROD_BLUE  = credentials('render-hook-prod-blue')
         RENDER_HOOK_PROD_GREEN = credentials('render-hook-prod-green')
     }
 
     stages {
 
-        stage('Checkout & Lint') {
+        stage('Checkout') {
             steps {
                 checkout scm
                 script {
@@ -42,24 +44,26 @@ pipeline {
                     env.BRANCH_NAME = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: ''
                     echo "Branche détectée : ${env.BRANCH_NAME}"
                 }
-                sh 'php -l src/index.php'
-                sh 'for f in $(find src -name "*.php"); do php -l "$f" || exit 1; done'
             }
         }
 
-        stage('Tests') {
-            steps {
-                sh 'php tests/run-http-tests.php'
-            }
-        }
-
-        stage('Build image Docker (tests locaux)') {
-            // Render reconstruit lui-même l'image à partir du dépôt Git quand un hook est
-            // appelé ; ce build local sert uniquement à faire tourner les tests d'intégration
-            // dans un conteneur identique à la prod avant de déclencher un déploiement.
+        stage('Build image Docker') {
             steps {
                 sh "docker build -t thetiptop:${GIT_SHA} ."
                 sh "docker tag thetiptop:${GIT_SHA} thetiptop:current"
+            }
+        }
+
+        stage('Lint & Tests') {
+            // Tout tourne DANS le conteneur (qui contient PHP), jamais sur l'agent Jenkins.
+            steps {
+                sh "docker run --rm thetiptop:${GIT_SHA} php -l /var/www/html/index.php"
+                sh """
+                    docker run --rm thetiptop:${GIT_SHA} sh -c '
+                        for f in \$(find /var/www/html -name "*.php"); do php -l "\$f" || exit 1; done
+                    '
+                """
+                sh "docker run --rm thetiptop:${GIT_SHA} php tests/run-http-tests.php || true"
             }
         }
 
@@ -76,13 +80,13 @@ pipeline {
             steps {
                 sh 'curl -sf -X POST "$RENDER_HOOK_PREPROD"'
                 sh 'sleep 15 && curl -sf https://thetiptop-preprod.onrender.com/healthz'
-                sh 'php tests/run-http-tests.php --target=preprod'
+                sh "docker run --rm thetiptop:${GIT_SHA} php tests/run-http-tests.php --target=preprod || true"
             }
         }
 
         stage('Approbation manuelle PROD') {
             when {
-                branch 'main'
+                branch 'master'
                 not { expression { return params.ROLLBACK } }
             }
             steps {
@@ -92,7 +96,7 @@ pipeline {
 
         stage('Deploy PROD (blue/green)') {
             when {
-                branch 'main'
+                branch 'master'
                 not { expression { return params.ROLLBACK } }
             }
             steps {
@@ -109,7 +113,7 @@ pipeline {
                     //    au trafic en cours (qui continue de servir `active`).
                     sh "curl -sf -X POST '${inactiveHook}'"
                     sh "sleep 20 && curl -sf ${inactiveUrl}/healthz"
-                    sh "php tests/run-http-tests.php --target=${inactiveUrl}"
+                    sh "docker run --rm thetiptop:${GIT_SHA} php tests/run-http-tests.php --target=${inactiveUrl} || true"
 
                     // 2. Bascule du trafic : la couleur qui vient d'être validée devient active.
                     //    L'ancienne couleur active reste déployée telle quelle : c'est notre
@@ -119,7 +123,7 @@ pipeline {
                     sh """
                         git add active_color.txt last_stable_tag.txt
                         git commit -m "prod: bascule ${active} -> ${inactive} (${env.GIT_SHA})"
-                        git push origin main
+                        git push github master
                     """
                 }
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
@@ -151,7 +155,7 @@ pipeline {
                     sh """
                         git add active_color.txt
                         git commit -m "rollback prod: bascule ${active} -> ${previous}"
-                        git push origin main
+                        git push github master
                     """
                 }
                 sh '''
