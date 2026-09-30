@@ -44,6 +44,10 @@ pipeline {
                     env.BRANCH_NAME = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: ''
                     echo "Branche détectée : ${env.BRANCH_NAME}"
                 }
+                // Identité Git locale au workspace, nécessaire pour les commits automatiques
+                // (bascule active_color.txt / last_stable_tag.txt) plus bas dans le pipeline.
+                sh 'git config user.email "ci@thetiptop.local"'
+                sh 'git config user.name "Jenkins CI"'
             }
         }
 
