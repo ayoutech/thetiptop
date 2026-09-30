@@ -130,8 +130,14 @@ pipeline {
                     """
                     // Le remote "origin" du workspace Jenkins pointe déjà vers GitHub (checkout
                     // en lecture anonyme) mais push nécessite un token -> credential dédiée.
+                    // fetch + rebase juste avant le push : évite l'échec si quelqu'un (toi en
+                    // local, ou un autre build) a poussé sur master entre-temps.
                     withCredentials([usernamePassword(credentialsId: 'github-push-token', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-                        sh 'git push https://$GH_USER:$GH_TOKEN@github.com/ayoutech/thetiptop.git HEAD:master'
+                        sh '''
+                            git fetch origin master
+                            git rebase origin/master
+                            git push https://$GH_USER:$GH_TOKEN@github.com/ayoutech/thetiptop.git HEAD:master
+                        '''
                     }
                 }
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
@@ -167,7 +173,11 @@ pipeline {
                         git commit -m "rollback prod: bascule ${active} -> ${previous}"
                     """
                     withCredentials([usernamePassword(credentialsId: 'github-push-token', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-                        sh 'git push https://$GH_USER:$GH_TOKEN@github.com/ayoutech/thetiptop.git HEAD:master'
+                        sh '''
+                            git fetch origin master
+                            git rebase origin/master
+                            git push https://$GH_USER:$GH_TOKEN@github.com/ayoutech/thetiptop.git HEAD:master
+                        '''
                     }
                 }
                 sh '''
