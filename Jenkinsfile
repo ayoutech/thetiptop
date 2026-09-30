@@ -18,11 +18,9 @@ pipeline {
     }
 
     environment {
-        // --- Base de données (secrets déjà en place, un jeu distinct par environnement) ---
-        DB_PASS_DEV          = credentials('db-pass-dev')
-        DB_PASS_PREPROD      = credentials('db-pass-preprod')
-        DB_PASS_PROD         = credentials('db-pass-prod')
-        API_HMAC_SECRET_PROD = credentials('api-hmac-secret-prod')
+        // NB: les credentials DB_PASS_* / API_HMAC_SECRET_PROD ne sont pas encore créées
+        // dans Jenkins et ne sont utilisées par aucun stage pour l'instant -> retirées ici.
+        // À réintégrer (credentials('db-pass-dev') etc.) le jour où un stage en a besoin.
 
         // --- Hooks de déploiement Render (les 4 credentials mises en place pour ce pipeline) ---
         RENDER_HOOK_DEV      = credentials('render-hook-dev')
