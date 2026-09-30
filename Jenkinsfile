@@ -36,6 +36,11 @@ pipeline {
                 checkout scm
                 script {
                     env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    // Ce job n'est pas un "Multibranch Pipeline" : BRANCH_NAME n'existe pas
+                    // nativement, on la reconstruit à partir de GIT_BRANCH (ex: "origin/develop")
+                    // pour que les `when { branch '...' }` ci-dessous fonctionnent.
+                    env.BRANCH_NAME = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: ''
+                    echo "Branche détectée : ${env.BRANCH_NAME}"
                 }
                 sh 'php -l src/index.php'
                 sh 'for f in $(find src -name "*.php"); do php -l "$f" || exit 1; done'
