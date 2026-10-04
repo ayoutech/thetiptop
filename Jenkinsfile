@@ -143,15 +143,19 @@ pipeline {
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
                 // Pushgateway accessible via le nom du conteneur Docker sur le même
                 // réseau (furious-network) : "pushgateway", pas un hostname VM externe.
+                // NB: le terminateur "EOF" du heredoc doit être collé à la marge gauche
+                // (sans indentation), sinon bash ne le reconnaît pas comme fin de bloc et
+                // le mot "EOF" lui-même est envoyé comme une ligne supplémentaire au
+                // pushgateway, ce qui casse le parsing du format Prometheus.
                 sh '''
-                    LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct) ))
-                    cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
-                    # TYPE deployments_total counter
-                    deployments_total{env="prod",status="success"} 1
-                    # TYPE lead_time_seconds gauge
-                    lead_time_seconds{env="prod"} ${LEAD_TIME}
-                    EOF
-                '''
+LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct) ))
+cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
+# TYPE deployments_total counter
+deployments_total{env="prod",status="success"} 1
+# TYPE lead_time_seconds gauge
+lead_time_seconds{env="prod"} ${LEAD_TIME}
+EOF
+'''
             }
         }
 
@@ -181,11 +185,11 @@ pipeline {
                     }
                 }
                 sh '''
-                    cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
-                    # TYPE deployments_failed_total counter
-                    deployments_failed_total{env="prod"} 1
-                    EOF
-                '''
+cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
+# TYPE deployments_failed_total counter
+deployments_failed_total{env="prod"} 1
+EOF
+'''
             }
         }
     }
