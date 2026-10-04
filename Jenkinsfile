@@ -143,13 +143,23 @@ pipeline {
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
                 // Pushgateway accessible via le nom du conteneur Docker sur le même
                 // réseau (furious-network) : "pushgateway", pas un hostname VM externe.
-                // NB: le terminateur "EOF" du heredoc doit être collé à la marge gauche
+                //
+                // NB1: le terminateur "EOF" du heredoc doit être collé à la marge gauche
                 // (sans indentation), sinon bash ne le reconnaît pas comme fin de bloc et
                 // le mot "EOF" lui-même est envoyé comme une ligne supplémentaire au
                 // pushgateway, ce qui casse le parsing du format Prometheus.
+                //
+                // NB2: on pousse sur un groupe "instance/${GIT_SHA}" distinct à chaque
+                // déploiement, car le Pushgateway REMPLACE (il ne cumule jamais) la valeur
+                // d'une métrique déjà poussée dans le même groupe job/instance. Sans ce
+                // label unique, deployments_total resterait bloqué à "1" pour toujours,
+                // quel que soit le nombre réel de déploiements. Avec un groupe par commit,
+                // chaque déploiement crée sa propre série, et la fréquence de déploiement
+                // (DORA) se calcule dans Prometheus avec :
+                //   count(deployments_total{env="prod",status="success"})
                 sh '''
 LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct) ))
-cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
+cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod/instance/${GIT_SHA} || true
 # TYPE deployments_total counter
 deployments_total{env="prod",status="success"} 1
 # TYPE lead_time_seconds gauge
@@ -184,8 +194,10 @@ EOF
                         '''
                     }
                 }
+                // Groupe distinct "-rollback" pour ne pas écraser le groupe de succès du
+                // même commit (même raison qu'au-dessus : un groupe = une série Prometheus).
                 sh '''
-cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
+cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod/instance/${GIT_SHA}-rollback || true
 # TYPE deployments_failed_total counter
 deployments_failed_total{env="prod"} 1
 EOF
