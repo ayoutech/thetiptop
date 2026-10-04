@@ -11,6 +11,13 @@
 //
 // NB: l'agent Jenkins n'a pas PHP installé -> toutes les commandes php (lint, tests) tournent
 // à l'intérieur de l'image Docker du projet via `docker run`, jamais directement sur l'agent.
+//
+// NB anti-boucle : chaque déploiement/rollback fait un commit+push automatique
+// (active_color.txt / last_stable_tag.txt) vers master, ce qui redéclenche le webhook
+// GitHub -> Jenkins. Sans protection, ce nouveau build attendrait une approbation
+// manuelle et referait un déploiement inutile (ou une boucle infinie). Le stage
+// Checkout détecte si le dernier commit vient de "Jenkins CI" lui-même et, si oui,
+// fixe env.SKIP_CI=true : tous les stages suivants sont alors sautés proprement.
 
 pipeline {
     agent any
@@ -43,6 +50,14 @@ pipeline {
                     // pour que les `when { branch '...' }` ci-dessous fonctionnent.
                     env.BRANCH_NAME = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: ''
                     echo "Branche détectée : ${env.BRANCH_NAME}"
+
+                    def lastAuthor = sh(script: 'git log -1 --format=%an', returnStdout: true).trim()
+                    if (lastAuthor == 'Jenkins CI') {
+                        echo "Dernier commit (${env.GIT_SHA}) fait par Jenkins CI lui-même (bascule/rollback automatique) -> build ignoré pour éviter une boucle infinie de déclenchements."
+                        env.SKIP_CI = 'true'
+                    } else {
+                        env.SKIP_CI = 'false'
+                    }
                 }
                 // Identité Git locale au workspace, nécessaire pour les commits automatiques
                 // (bascule active_color.txt / last_stable_tag.txt) plus bas dans le pipeline.
@@ -52,6 +67,7 @@ pipeline {
         }
 
         stage('Build image Docker') {
+            when { expression { return env.SKIP_CI != 'true' } }
             steps {
                 sh "docker build -t thetiptop:${GIT_SHA} ."
                 sh "docker tag thetiptop:${GIT_SHA} thetiptop:current"
@@ -60,6 +76,7 @@ pipeline {
 
         stage('Lint & Tests') {
             // Tout tourne DANS le conteneur (qui contient PHP), jamais sur l'agent Jenkins.
+            when { expression { return env.SKIP_CI != 'true' } }
             steps {
                 sh "docker run --rm thetiptop:${GIT_SHA} php -l /var/www/html/index.php"
                 sh """
@@ -72,7 +89,12 @@ pipeline {
         }
 
         stage('Deploy DEV') {
-            when { branch 'develop' }
+            when {
+                allOf {
+                    branch 'develop'
+                    expression { return env.SKIP_CI != 'true' }
+                }
+            }
             steps {
                 sh 'curl -sf -X POST "$RENDER_HOOK_DEV"'
                 sh 'sleep 15 && curl -sf https://thetiptop-dev.onrender.com/healthz'
@@ -80,7 +102,12 @@ pipeline {
         }
 
         stage('Deploy PREPROD') {
-            when { branch 'preprod' }
+            when {
+                allOf {
+                    branch 'preprod'
+                    expression { return env.SKIP_CI != 'true' }
+                }
+            }
             steps {
                 sh 'curl -sf -X POST "$RENDER_HOOK_PREPROD"'
                 sh 'sleep 15 && curl -sf https://thetiptop-preprod.onrender.com/healthz'
@@ -90,8 +117,11 @@ pipeline {
 
         stage('Approbation manuelle PROD') {
             when {
-                branch 'master'
-                not { expression { return params.ROLLBACK } }
+                allOf {
+                    branch 'master'
+                    not { expression { return params.ROLLBACK } }
+                    expression { return env.SKIP_CI != 'true' }
+                }
             }
             steps {
                 input message: "Déployer ${env.GIT_SHA} en production ?", ok: 'Déployer'
@@ -100,8 +130,11 @@ pipeline {
 
         stage('Deploy PROD (blue/green)') {
             when {
-                branch 'master'
-                not { expression { return params.ROLLBACK } }
+                allOf {
+                    branch 'master'
+                    not { expression { return params.ROLLBACK } }
+                    expression { return env.SKIP_CI != 'true' }
+                }
             }
             steps {
                 script {
@@ -170,7 +203,12 @@ EOF
         }
 
         stage('Rollback PROD (bascule instantanée)') {
-            when { expression { return params.ROLLBACK == true } }
+            when {
+                allOf {
+                    expression { return params.ROLLBACK == true }
+                    expression { return env.SKIP_CI != 'true' }
+                }
+            }
             steps {
                 script {
                     def active   = readFile('active_color.txt').trim()
