@@ -141,11 +141,11 @@ pipeline {
                     }
                 }
                 // --- Poussée des métriques DORA vers Prometheus Pushgateway ---
-                // NB: "oracle-vm" n'est pas encore provisionnée/accessible depuis Jenkins ->
-                // non-bloquant (|| true) pour l'instant. À retirer le || true une fois la VM en place.
+                // Pushgateway accessible via le nom du conteneur Docker sur le même
+                // réseau (furious-network) : "pushgateway", pas un hostname VM externe.
                 sh '''
                     LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct) ))
-                    cat <<EOF | curl --data-binary @- http://oracle-vm:9091/metrics/job/dora/env/prod || true
+                    cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
                     # TYPE deployments_total counter
                     deployments_total{env="prod",status="success"} 1
                     # TYPE lead_time_seconds gauge
@@ -181,7 +181,7 @@ pipeline {
                     }
                 }
                 sh '''
-                    cat <<EOF | curl --data-binary @- http://oracle-vm:9091/metrics/job/dora/env/prod || true
+                    cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod || true
                     # TYPE deployments_failed_total counter
                     deployments_failed_total{env="prod"} 1
                     EOF
