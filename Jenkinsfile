@@ -191,7 +191,7 @@ pipeline {
                 // (DORA) se calcule dans Prometheus avec :
                 //   count(deployments_total{env="prod",status="success"})
                 sh '''
-LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct) ))
+LEAD_TIME=$(( $(date +%s) - $(git log -1 --format=%ct ${GIT_SHA}) ))
 cat <<EOF | curl --data-binary @- http://pushgateway:9091/metrics/job/dora/env/prod/instance/${GIT_SHA} || true
 # TYPE deployments_total counter
 deployments_total{env="prod",status="success"} 1
