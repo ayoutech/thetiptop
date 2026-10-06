@@ -17,7 +17,7 @@ let lastFetch = 0;
 function refreshColor() {
   return new Promise((resolve) => {
     if (Date.now() - lastFetch < CACHE_MS) return resolve(color);
-    https.get(COLOR_URL, { headers: { 'Cache-Control': 'no-cache' }, timeout: 4000 }, (r) => {
+    https.get(COLOR_URL + (COLOR_URL.includes('?') ? '&' : '?') + 'cb=' + Date.now(), { headers: { 'Cache-Control': 'no-cache' }, timeout: 4000 }, (r) => {
       let d = '';
       r.on('data', (c) => (d += c));
       r.on('end', () => {
