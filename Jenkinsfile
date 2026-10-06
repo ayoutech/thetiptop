@@ -142,7 +142,7 @@ pipeline {
                     def inactive = (active == 'blue') ? 'green' : 'blue'
                     def inactiveHook = (inactive == 'green') ? env.RENDER_HOOK_PROD_GREEN : env.RENDER_HOOK_PROD_BLUE
                     // 'blue' = service Render "thetiptop" (prod historique), 'green' = "thetiptop-green"
-                    def inactiveUrl  = (inactive == 'green') ? 'https://thetiptop-green.onrender.com' : 'https://thetiptop.onrender.com'
+                    def inactiveUrl  = (inactive == 'green') ? 'https://thetiptop-green.onrender.com' : 'https://thetiptop-blue.onrender.com'
 
                     echo "Couleur active actuelle : ${active} — déploiement de ${env.GIT_SHA} sur ${inactive}"
 
