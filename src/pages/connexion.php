@@ -6,6 +6,8 @@ if (isset($_SESSION['user_id'])) {
     header('Location: /pages/mon-compte.php');
     exit;
 }
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify(); // protection CSRF : refuse tout POST sans jeton valide
 require_once __DIR__ . '/../config/database.php';
 $pdo = getDB();
 $erreur = '';
@@ -22,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($mdp, $user['password'])) {
+            session_regenerate_id(true); // anti fixation de session
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['user_nom']  = $user['prenom'] . ' ' . $user['nom'];
             $_SESSION['user_role'] = $user['role'];
@@ -165,6 +168,7 @@ require_once __DIR__ . '/../includes/header.php';
             <div class="alert-ttt alert-erreur"><?= htmlspecialchars($erreur) ?></div>
         <?php endif; ?>
         <form method="POST" action="">
+<?= csrf_field() ?>
             <div class="form-group">
                 <label class="form-label">Adresse email</label>
                 <input type="email" name="email" class="form-control-ttt"

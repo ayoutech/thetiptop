@@ -1,5 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify(); // protection CSRF : refuse tout POST sans jeton valide
 $page_title = 'Tirage au sort final — Thé Tip Top';
 require_once __DIR__ . '/../includes/header.php';
 
@@ -206,6 +208,7 @@ $total_participants = $db->query("SELECT COUNT(*) FROM tirage_final")->fetchColu
             </div>
 
             <form method="POST" onsubmit="return confirm('Confirmer le lancement du tirage au sort ? Cette action est définitive et ne pourra être refaite.');">
+<?= csrf_field() ?>
                 <button type="submit" name="lancer_tirage" value="1" class="btn-tirage"
                         <?= $total_participants == 0 ? 'disabled' : '' ?>>
                     🎲 Lancer le tirage au sort

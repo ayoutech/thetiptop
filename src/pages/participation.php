@@ -7,6 +7,8 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify(); // protection CSRF : refuse tout POST sans jeton valide
 $page_title = 'Participer — Thé Tip Top';
 require_once __DIR__ . '/../includes/header.php';
 
@@ -36,27 +38,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Le code ne doit contenir que des lettres et des chiffres.';
     } else {
         $db = getDB();
-        $stmt = $db->prepare("SELECT * FROM tickets WHERE code = ?");
-        $stmt->execute([$code]);
-        $ticket = $stmt->fetch();
+        // Réservation ATOMIQUE du code : un seul UPDATE conditionnel (utilise = 0).
+        // Deux participants simultanés ne peuvent pas gagner le même ticket : la base
+        // n'accepte qu'une seule mise à jour, l'autre voit rowCount() = 0.
+        $stmt = $db->prepare("UPDATE tickets SET utilise = 1, user_id = ?, date_utilisation = NOW() WHERE code = ? AND utilise = 0");
+        $stmt->execute([$user['id'], $code]);
 
-        if (!$ticket) {
-            $error = 'Ce code est invalide. Vérifiez votre ticket de caisse.';
-        } elseif ($ticket['utilise']) {
-            $error = 'Ce code a déjà été utilisé.';
-        } else {
-            $stmt = $db->prepare("UPDATE tickets SET utilise = 1, user_id = ?, date_utilisation = NOW() WHERE code = ?");
-            $stmt->execute([$user['id'], $code]);
+        if ($stmt->rowCount() === 1) {
+            $stmt = $db->prepare("SELECT gain FROM tickets WHERE code = ?");
+            $stmt->execute([$code]);
+            $ticket = $stmt->fetch();
 
-            $stmt = $db->prepare("SELECT id FROM tirage_final WHERE user_id = ?");
-            $stmt->execute([$user['id']]);
-            if (!$stmt->fetch()) {
-                $stmt = $db->prepare("INSERT INTO tirage_final (user_id) VALUES (?)");
-                $stmt->execute([$user['id']]);
-            }
+            // INSERT ... SELECT ... WHERE NOT EXISTS : un seul bulletin par participant, même en cas d'accès simultanés
+            $stmt = $db->prepare("INSERT INTO tirage_final (user_id) SELECT ? FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM tirage_final WHERE user_id = ?)");
+            $stmt->execute([$user['id'], $user['id']]);
 
             $gain = $gains_labels[$ticket['gain']];
             $gain['code'] = $code;
+        } else {
+            // Aucune ligne modifiée : soit le code n'existe pas, soit il est déjà utilisé.
+            $stmt = $db->prepare("SELECT utilise FROM tickets WHERE code = ?");
+            $stmt->execute([$code]);
+            $ticket = $stmt->fetch();
+            $error = $ticket
+                ? 'Ce code a déjà été utilisé.'
+                : 'Ce code est invalide. Vérifiez votre ticket de caisse.';
         }
     }
 }
@@ -295,6 +301,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST">
+<?= csrf_field() ?>
             <div class="form-group">
                 <label class="form-label">Votre code unique</label>
                 <input type="text" id="code-input" name="code"
