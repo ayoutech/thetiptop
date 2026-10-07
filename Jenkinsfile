@@ -34,6 +34,12 @@ def publishReport(String pattern) {
     }
 }
 
+// Lance un pipeline de test dédié sur la même branche et attend son résultat (échec ou instable propagé).
+def runTestJob(String jobName) {
+    build job: jobName, wait: true, propagate: true,
+          parameters: [string(name: 'BRANCH', value: env.BRANCH_NAME ?: 'develop')]
+}
+
 pipeline {
     agent any
 
@@ -81,57 +87,44 @@ pipeline {
             }
         }
 
-        // ======================= TESTS : tous exécutés AVANT la construction de l'image =======================
-        // Chaque stage = un type de test, visible séparément dans la Stage View. Les tests tournent dans des
-        // conteneurs jetables (image d'outillage + MariaDB), jamais sur l'agent. Voir ci/run-suite.sh.
+        // ======================= TESTS : un pipeline Jenkins dédié par type de test =======================
+        // Chaque type de test est un job séparé (ttt-test-*, voir ci/jenkins/). Si un test échoue, ce stage est rouge
+        // et son lien mène directement au job concerné : on sait tout de suite quel type de test a échoué.
+        // Tous passent AVANT la construction de l'image Docker.
 
-        stage('1. Qualité : lint PHP') {
+        stage("1. Qualité : lint PHP") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps { sh 'sh ci/run-suite.sh lint' }
+            steps { script { runTestJob('ttt-test-1-lint') } }
         }
 
-        stage('2. Tests unitaires') {
+        stage("2. Tests unitaires") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps { sh 'sh ci/run-suite.sh unit' }
-            post { always { script { publishReport('reports/unit.xml') } } }
+            steps { script { runTestJob('ttt-test-2-unitaires') } }
         }
 
         stage("3. Tests d'intégration (MariaDB)") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps { sh 'sh ci/run-suite.sh integration' }
-            post { always { script { publishReport('reports/integration.xml') } } }
+            steps { script { runTestJob('ttt-test-3-integration') } }
         }
 
         stage("4. Tests d'API (HMAC, anti-rejeu, rate limit)") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps { sh 'sh ci/run-suite.sh api' }
-            post { always { script { publishReport('reports/api.xml') } } }
+            steps { script { runTestJob('ttt-test-4-api') } }
         }
 
-        stage('5. Tests de sécurité (SAST + secrets)') {
+        stage("5. Tests de sécurité (SAST + secrets + Trivy)") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps {
-                sh 'sh ci/run-suite.sh security'
-                // Trivy : vulnérabilités, secrets et mauvaises configurations du dépôt.
-                // Un résultat HIGH/CRITICAL marque le build "instable" sans l'arrêter (la base de
-                // vulnérabilités est téléchargée à chaque exécution : on évite qu'un incident réseau bloque la chaîne).
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    sh 'sh ci/run-trivy.sh fs'
-                }
-            }
-            post { always { script { publishReport('reports/security.xml') } } }
+            steps { script { runTestJob('ttt-test-5-securite') } }
         }
 
-        stage('6a. Tests end-to-end (parcours HTTP)') {
+        stage("6a. Tests end-to-end (parcours HTTP)") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps { sh 'sh ci/run-suite.sh e2e' }
-            post { always { script { publishReport('reports/e2e.xml') } } }
+            steps { script { runTestJob('ttt-test-6a-e2e-http') } }
         }
 
-        stage('6b. Tests end-to-end (navigateur Chromium)') {
+        stage("6b. Tests end-to-end (navigateur Chromium)") {
             when { expression { return env.SKIP_CI != 'true' } }
-            steps { sh 'sh ci/run-browser-tests.sh' }
-            post { always { script { publishReport('reports/e2e-browser.xml') } } }
+            steps { script { runTestJob('ttt-test-6b-e2e-navigateur') } }
         }
 
         // ======================= BUILD : uniquement si TOUS les tests ci-dessus sont passés =======================

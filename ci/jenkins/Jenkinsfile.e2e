@@ -1,0 +1,30 @@
+// Pipeline dédié : 6a. Tests end-to-end (parcours HTTP)
+// Job Jenkins : ttt-test-6a-e2e-http  (créé par ci/jenkins/create-jobs.sh, appelé par le Jenkinsfile principal)
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'develop', description: 'Branche à tester')
+    }
+    options {
+        timeout(time: 40, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+        stage('6a. Tests end-to-end (parcours HTTP)') {
+            steps {
+                sh 'sh ci/run-suite.sh e2e'
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                try { junit allowEmptyResults: true, testResults: 'reports/e2e.xml' }
+                catch (Throwable e) { echo "Rapport JUnit non publié (${e.message})" }
+            }
+        }
+    }
+}

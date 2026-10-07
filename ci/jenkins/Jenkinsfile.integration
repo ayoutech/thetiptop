@@ -1,0 +1,30 @@
+// Pipeline dédié : 3. Tests d'intégration (MariaDB)
+// Job Jenkins : ttt-test-3-integration  (créé par ci/jenkins/create-jobs.sh, appelé par le Jenkinsfile principal)
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'develop', description: 'Branche à tester')
+    }
+    options {
+        timeout(time: 40, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+        stage('3. Tests d\'intégration (MariaDB)') {
+            steps {
+                sh 'sh ci/run-suite.sh integration'
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                try { junit allowEmptyResults: true, testResults: 'reports/integration.xml' }
+                catch (Throwable e) { echo "Rapport JUnit non publié (${e.message})" }
+            }
+        }
+    }
+}

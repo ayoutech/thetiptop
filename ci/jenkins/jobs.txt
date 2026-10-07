@@ -1,0 +1,7 @@
+ttt-test-1-lint|lint
+ttt-test-2-unitaires|unit
+ttt-test-3-integration|integration
+ttt-test-4-api|api
+ttt-test-5-securite|security
+ttt-test-6a-e2e-http|e2e
+ttt-test-6b-e2e-navigateur|e2e-browser
