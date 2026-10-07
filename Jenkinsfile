@@ -4,10 +4,16 @@
 //
 // Traçabilité blue/green :
 //   - active_color.txt   : couleur actuellement servie en prod (blue|green), versionnée dans le repo.
-//     'blue' = service Render "thetiptop", 'green' = service Render "thetiptop-green".
-//     Le reverse proxy / la config DNS de thetiptop.onrender.com doit lire cette valeur pour
-//     savoir vers quel service router le trafic.
+//     'blue' = service Render "thetiptop-blue", 'green' = service Render "thetiptop-green".
+//     Le service public "thetiptop" (https://thetiptop.onrender.com) est un routeur (dossier router/)
+//     qui lit cette valeur sur GitHub et redirige le trafic vers la couleur active.
 //   - last_stable_tag.txt: dernier commit déployé avec succès et validé en prod (traçabilité DORA).
+//
+// Tests (AVANT toute construction d'image) : un type de test = un stage, dans cet ordre :
+//   1 lint PHP -> 2 unitaires -> 3 intégration (MariaDB) -> 4 API (HMAC) -> 5 sécurité (SAST + Trivy)
+//   -> 6 end-to-end (HTTP puis navigateur). Un échec arrête la chaîne : pas d'image, pas de déploiement.
+//   Après déploiement : tests de fumée (version servie + en-têtes) et test de performance k6 sur DEV.
+//   Scripts : ci/*.sh ; suites : tests/ ; rapports JUnit publiés dans Jenkins (onglet « Tests »).
 //
 // NB: l'agent Jenkins n'a pas PHP installé -> toutes les commandes php (lint, tests) tournent
 // à l'intérieur de l'image Docker du projet via `docker run`, jamais directement sur l'agent.
@@ -18,6 +24,21 @@
 // manuelle et referait un déploiement inutile (ou une boucle infinie). Le stage
 // Checkout détecte si le dernier commit vient de "Jenkins CI" lui-même et, si oui,
 // fixe env.SKIP_CI=true : tous les stages suivants sont alors sautés proprement.
+
+// Publie un rapport JUnit sans faire échouer le build si le plugin JUnit est absent.
+def publishReport(String pattern) {
+    try {
+        junit allowEmptyResults: true, testResults: pattern
+    } catch (Throwable e) {
+        echo "Rapport JUnit non publié (${e.message})"
+    }
+}
+
+// Lance un pipeline de test dédié sur la même branche et attend son résultat (échec ou instable propagé).
+def runTestJob(String jobName) {
+    build job: jobName, wait: true, propagate: true,
+          parameters: [string(name: 'BRANCH', value: env.BRANCH_NAME ?: 'develop')]
+}
 
 pipeline {
     agent any
@@ -66,6 +87,48 @@ pipeline {
             }
         }
 
+        // ======================= TESTS : un pipeline Jenkins dédié par type de test =======================
+        // Chaque type de test est un job séparé (ttt-test-*, voir ci/jenkins/). Si un test échoue, ce stage est rouge
+        // et son lien mène directement au job concerné : on sait tout de suite quel type de test a échoué.
+        // Tous passent AVANT la construction de l'image Docker.
+
+        stage("1. Qualité : lint PHP") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-1-lint') } }
+        }
+
+        stage("2. Tests unitaires") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-2-unitaires') } }
+        }
+
+        stage("3. Tests d'intégration (MariaDB)") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-3-integration') } }
+        }
+
+        stage("4. Tests d'API (HMAC, anti-rejeu, rate limit)") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-4-api') } }
+        }
+
+        stage("5. Tests de sécurité (SAST + secrets + Trivy)") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-5-securite') } }
+        }
+
+        stage("6a. Tests end-to-end (parcours HTTP)") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-6a-e2e-http') } }
+        }
+
+        stage("6b. Tests end-to-end (navigateur Chromium)") {
+            when { expression { return env.SKIP_CI != 'true' } }
+            steps { script { runTestJob('ttt-test-6b-e2e-navigateur') } }
+        }
+
+        // ======================= BUILD : uniquement si TOUS les tests ci-dessus sont passés =======================
+
         stage('Build image Docker') {
             when { expression { return env.SKIP_CI != 'true' } }
             steps {
@@ -74,17 +137,12 @@ pipeline {
             }
         }
 
-        stage('Lint & Tests') {
-            // Tout tourne DANS le conteneur (qui contient PHP), jamais sur l'agent Jenkins.
+        stage("Scan de l'image (Trivy)") {
             when { expression { return env.SKIP_CI != 'true' } }
             steps {
-                sh "docker run --rm thetiptop:${GIT_SHA} php -l /var/www/html/index.php"
-                sh """
-                    docker run --rm thetiptop:${GIT_SHA} sh -c '
-                        for f in \$(find /var/www/html -name "*.php"); do php -l "\$f" || exit 1; done
-                    '
-                """
-                sh "docker run --rm thetiptop:${GIT_SHA} php tests/run-http-tests.php || true"
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh "sh ci/run-trivy.sh image thetiptop:${GIT_SHA}"
+                }
             }
         }
 
@@ -97,7 +155,23 @@ pipeline {
             }
             steps {
                 sh 'curl -sf -X POST "$RENDER_HOOK_DEV"'
-                sh 'sleep 15 && curl -sf https://thetiptop-dev.onrender.com/healthz'
+                // Attend que DEV serve CE commit (en-tête X-Release) puis exécute les tests de fumée.
+                sh "sh ci/smoke-test.sh https://thetiptop-dev.onrender.com ${env.GIT_SHA}"
+            }
+        }
+
+        stage('Test de performance (k6) sur DEV') {
+            when {
+                allOf {
+                    branch 'develop'
+                    expression { return env.SKIP_CI != 'true' }
+                }
+            }
+            steps {
+                // Seuils : < 1 % d'erreurs et p95 < 2 s. Dépassement = build instable (pas bloquant).
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh 'sh ci/run-perf.sh https://thetiptop-dev.onrender.com'
+                }
             }
         }
 
@@ -110,8 +184,7 @@ pipeline {
             }
             steps {
                 sh 'curl -sf -X POST "$RENDER_HOOK_PREPROD"'
-                sh 'sleep 15 && curl -sf https://thetiptop-preprod.onrender.com/healthz'
-                sh "docker run --rm thetiptop:${GIT_SHA} php tests/run-http-tests.php --target=preprod || true"
+                sh "sh ci/smoke-test.sh https://thetiptop-preprod.onrender.com ${env.GIT_SHA}"
             }
         }
 
@@ -141,7 +214,7 @@ pipeline {
                     def active   = readFile('active_color.txt').trim()
                     def inactive = (active == 'blue') ? 'green' : 'blue'
                     def inactiveHook = (inactive == 'green') ? env.RENDER_HOOK_PROD_GREEN : env.RENDER_HOOK_PROD_BLUE
-                    // 'blue' = service Render "thetiptop" (prod historique), 'green' = "thetiptop-green"
+                    // 'blue' = service Render "thetiptop-blue", 'green' = "thetiptop-green"
                     def inactiveUrl  = (inactive == 'green') ? 'https://thetiptop-green.onrender.com' : 'https://thetiptop-blue.onrender.com'
 
                     echo "Couleur active actuelle : ${active} — déploiement de ${env.GIT_SHA} sur ${inactive}"
@@ -149,8 +222,9 @@ pipeline {
                     // 1. On déploie la nouvelle version sur la couleur INACTIVE, sans toucher
                     //    au trafic en cours (qui continue de servir `active`).
                     sh "curl -sf -X POST '${inactiveHook}'"
-                    sh "sleep 20 && curl -sf ${inactiveUrl}/healthz"
-                    sh "docker run --rm thetiptop:${GIT_SHA} php tests/run-http-tests.php --target=${inactiveUrl} || true"
+                    // Les tests de fumée attendent que la couleur inactive serve bien CE commit, puis
+                    // vérifient pages, API, en-têtes. En cas d'échec, le trafic n'est PAS basculé.
+                    sh "sh ci/smoke-test.sh ${inactiveUrl} ${env.GIT_SHA}"
 
                     // 2. Bascule du trafic : la couleur qui vient d'être validée devient active.
                     //    L'ancienne couleur active reste déployée telle quelle : c'est notre

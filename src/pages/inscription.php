@@ -6,6 +6,8 @@ if (isset($_SESSION['user_id'])) {
     header('Location: /pages/participation.php');
     exit;
 }
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify(); // protection CSRF : refuse tout POST sans jeton valide
 require_once __DIR__ . '/../config/database.php';
 $pdo = getDB();
 $erreur = '';
@@ -41,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare('INSERT INTO users (prenom, nom, email, age, sexe, password, newsletter, role) VALUES (?,?,?,?,?,?,?,?)');
             $stmt->execute([$prenom, $nom, $email, $age, $sexe, $hash, $newsletter, 'client']);
             $user_id = $pdo->lastInsertId();
+            session_regenerate_id(true); // anti fixation de session
             $_SESSION['user_id']   = $user_id;
             $_SESSION['user_nom']  = $prenom . ' ' . $nom;
             $_SESSION['user_role'] = 'client';
@@ -206,6 +209,7 @@ require_once __DIR__ . '/../includes/header.php';
         <?php endif; ?>
 
         <form method="POST" action="">
+<?= csrf_field() ?>
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Prénom <span class="req">*</span></label>

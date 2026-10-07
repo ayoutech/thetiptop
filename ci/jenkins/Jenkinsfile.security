@@ -1,0 +1,34 @@
+// Pipeline dédié : 5. Tests de sécurité (SAST + secrets + Trivy)
+// Job Jenkins : ttt-test-5-securite  (créé par ci/jenkins/create-jobs.sh, appelé par le Jenkinsfile principal)
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'develop', description: 'Branche à tester')
+    }
+    options {
+        timeout(time: 40, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+        stage('5. Tests de sécurité (SAST + secrets + Trivy)') {
+            steps {
+                sh 'sh ci/run-suite.sh security'
+                // Trivy : un résultat HIGH/CRITICAL rend ce job "instable" sans l'arrêter.
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh 'sh ci/run-trivy.sh fs'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                try { junit allowEmptyResults: true, testResults: 'reports/security.xml' }
+                catch (Throwable e) { echo "Rapport JUnit non publié (${e.message})" }
+            }
+        }
+    }
+}

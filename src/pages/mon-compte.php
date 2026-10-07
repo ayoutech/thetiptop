@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+require_once __DIR__ . '/../includes/csrf.php';
 $page_title = 'Mon Compte — Thé Tip Top';
 require_once __DIR__ . '/../includes/header.php';
 
@@ -212,6 +213,7 @@ $tirage = $stmt2->fetch();
             La suppression de votre compte est définitive et irréversible. Vos gains et votre historique seront perdus.
         </p>
         <form method="POST" action="/pages/supprimer-compte.php" onsubmit="return confirm('Êtes-vous vraiment sûr(e) de vouloir supprimer votre compte ? Cette action est irréversible.');">
+<?= csrf_field() ?>
             <button type="submit" style="background: #8b2020; color: #fff; border: none; padding: 10px 24px; border-radius: 2px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;">
                 Supprimer mon compte
             </button>

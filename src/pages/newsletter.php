@@ -1,6 +1,8 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify(); // protection CSRF : refuse tout POST sans jeton valide
 require_once __DIR__ . '/../config/database.php';
 
 $success = false;
@@ -121,6 +123,7 @@ require_once __DIR__ . '/../includes/header.php';
 
         <?php if (!$success): ?>
         <form method="POST">
+<?= csrf_field() ?>
             <input type="email" name="newsletter_email" class="newsletter-input" placeholder="votre@email.fr" required>
             <button type="submit" class="newsletter-btn-page">S'inscrire à la newsletter</button>
         </form>

@@ -5,6 +5,15 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Action destructive : POST uniquement (jamais un simple lien) et jeton CSRF obligatoire.
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    exit('Méthode non autorisée.');
+}
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify();
+
 require_once __DIR__ . '/../config/database.php';
 $db = getDB();
 

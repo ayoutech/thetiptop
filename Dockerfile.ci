@@ -1,0 +1,16 @@
+# Image d'OUTILLAGE de test (distincte de l'image applicative du Dockerfile).
+# PHP 8.2 (même version que la production) + extension MySQL + PHPUnit 10.
+# Construite une fois puis réutilisée via le cache Docker ; sans contexte de build (docker build - < Dockerfile.ci).
+FROM php:8.2-cli
+
+RUN docker-php-ext-install pdo pdo_mysql mysqli \
+    && apt-get update && apt-get install -y --no-install-recommends git unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+ENV COMPOSER_HOME=/opt/composer COMPOSER_ALLOW_SUPERUSER=1
+RUN composer global require --no-interaction --no-progress phpunit/phpunit:^10.5 \
+    && ln -s /opt/composer/vendor/bin/phpunit /usr/local/bin/phpunit
+
+RUN mkdir -p /app/reports
+WORKDIR /app

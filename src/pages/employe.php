@@ -1,5 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../includes/csrf.php';
+csrf_verify(); // protection CSRF : refuse tout POST sans jeton valide
 $page_title = 'Espace Boutique — Thé Tip Top';
 require_once __DIR__ . '/../includes/header.php';
 
@@ -293,6 +295,7 @@ if (isset($_GET['recherche'])) {
                             <td>
                                 <?php if (!$t['remis']): ?>
                                 <form method="POST" style="display:inline;">
+<?= csrf_field() ?>
                                     <input type="hidden" name="ticket_id" value="<?= $t['id'] ?>">
                                     <input type="hidden" name="marquer_remis" value="1">
                                     <button type="submit" class="btn-remis"

@@ -1,0 +1,30 @@
+// Pipeline dédié : 4. Tests d'API (HMAC, anti-rejeu, rate limit)
+// Job Jenkins : ttt-test-4-api  (créé par ci/jenkins/create-jobs.sh, appelé par le Jenkinsfile principal)
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'develop', description: 'Branche à tester')
+    }
+    options {
+        timeout(time: 40, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+        stage('4. Tests d\'API (HMAC, anti-rejeu, rate limit)') {
+            steps {
+                sh 'sh ci/run-suite.sh api'
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                try { junit allowEmptyResults: true, testResults: 'reports/api.xml' }
+                catch (Throwable e) { echo "Rapport JUnit non publié (${e.message})" }
+            }
+        }
+    }
+}

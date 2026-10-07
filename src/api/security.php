@@ -33,10 +33,14 @@ function verify_signed_request(): array
 {
     header('Content-Type: application/json');
 
+    // 0. Secret HMAC obligatoire : sans lui, n'importe qui pourrait signer avec une clé vide
+    if (API_HMAC_SECRET === '') {
+        http_response_code(500);
+        exit(json_encode(['error' => 'Configuration serveur incomplète']));
+    }
+
     // 1. HTTPS obligatoire (Render place la valeur dans HTTP_X_FORWARDED_PROTO)
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
-    if (!$isHttps) {
+    if (!api_is_https($_SERVER)) {
         http_response_code(400);
         exit(json_encode(['error' => 'HTTPS requis']));
     }
@@ -51,7 +55,7 @@ function verify_signed_request(): array
     }
 
     // 2. Fenêtre anti-rejeu
-    if (!ctype_digit($timestamp) || abs(time() - (int)$timestamp) > API_MAX_TIMESTAMP_DRIFT) {
+    if (!api_timestamp_is_valid($timestamp)) {
         log_failed_auth($apiKey, 'timestamp expiré ou invalide');
         http_response_code(401);
         exit(json_encode(['error' => 'Requête expirée']));
@@ -71,11 +75,10 @@ function verify_signed_request(): array
         exit(json_encode(['error' => 'Clé API invalide']));
     }
 
-        // 5. Vérification de la signature HMAC
-        // 5. Vérification de la signature HMAC
+    // 5. Vérification de la signature HMAC
     $body = file_get_contents('php://input');
-    $payload = $_SERVER['REQUEST_METHOD'] . '|' . $_SERVER['REQUEST_URI'] . '|' . $timestamp . '|' . $body;
-    $expected = hash_hmac('sha256', $payload, API_HMAC_SECRET);
+    $payload = api_build_payload($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $timestamp, $body);
+    $expected = api_sign($payload, API_HMAC_SECRET);
 
     if (!hash_equals($expected, $signature)) {
         log_failed_auth($apiKey, 'signature invalide');
@@ -84,6 +87,37 @@ function verify_signed_request(): array
     }
 
     return $keyRow;
+}
+
+/**
+ * Fonctions pures (sans effet de bord) : isolées pour pouvoir être testées
+ * unitairement (voir tests/Unit/ApiSecurityHelpersTest.php).
+ */
+
+/** Vrai si la requête est en HTTPS (direct ou derrière le proxy Render). */
+function api_is_https(array $server): bool
+{
+    return (!empty($server['HTTPS']) && $server['HTTPS'] !== 'off')
+        || (($server['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+}
+
+/** Vrai si l'horodatage est un entier et s'écarte de moins de 5 minutes de $now. */
+function api_timestamp_is_valid(string $timestamp, ?int $now = null): bool
+{
+    $now = $now ?? time();
+    return ctype_digit($timestamp) && abs($now - (int)$timestamp) <= API_MAX_TIMESTAMP_DRIFT;
+}
+
+/** Chaîne signée : METHODE|URI|horodatage|corps. */
+function api_build_payload(string $method, string $uri, string $timestamp, string $body): string
+{
+    return $method . '|' . $uri . '|' . $timestamp . '|' . $body;
+}
+
+/** Signature HMAC-SHA256 hexadécimale. */
+function api_sign(string $payload, string $secret): string
+{
+    return hash_hmac('sha256', $payload, $secret);
 }
 
 /**
