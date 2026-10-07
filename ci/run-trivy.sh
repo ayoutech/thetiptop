@@ -15,8 +15,12 @@ case "$MODE" in
     docker create --name "$NAME" $CACHE --entrypoint trivy "$TRIVY" \
       fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --exit-code 1 --skip-dirs /scan/.git /scan >/dev/null
     PATHS=""; for p in src Dockerfile Dockerfile.ci apache.conf docker docker-compose.yml Jenkinsfile ci tests monitoring router; do [ -e "$p" ] && PATHS="$PATHS $p"; done
+    # /scan n'existe pas dans le conteneur : on prépare un dossier "scan" et on le copie à la racine
+    STAGE=$(mktemp -d); mkdir "$STAGE/scan"
     # shellcheck disable=SC2086
-    tar -c $PATHS | docker cp - "$NAME":/scan
+    cp -R $PATHS "$STAGE/scan/"
+    tar -C "$STAGE" -c scan | docker cp - "$NAME":/
+    rm -rf "$STAGE"
     set +e; docker start -a "$NAME"; RC=$?; set -e
     docker rm -f "$NAME" >/dev/null 2>&1 || true
     exit $RC ;;

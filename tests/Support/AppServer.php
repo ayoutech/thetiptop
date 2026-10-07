@@ -20,8 +20,15 @@ final class AppServer
         fclose($sock);
 
         $env = array_merge(getenv(), ['API_HMAC_SECRET' => TTT_TEST_SECRET, 'PHP_CLI_SERVER_WORKERS' => '8']);
+        // Même configuration PHP que la production (docker/security.ini, copié dans l'image par le Dockerfile).
+        $cmd = [PHP_BINARY];
+        foreach (parse_ini_file(TTT_ROOT . '/docker/security.ini') ?: [] as $k => $v) {
+            $cmd[] = '-d';
+            $cmd[] = $k . '=' . $v;
+        }
+        $cmd = array_merge($cmd, ['-S', "127.0.0.1:$port", '-t', TTT_SRC]);
         self::$proc = proc_open(
-            [PHP_BINARY, '-S', "127.0.0.1:$port", '-t', TTT_SRC],
+            $cmd,
             [0 => ['pipe', 'r'], 1 => ['file', sys_get_temp_dir() . '/ttt_server.log', 'a'], 2 => ['file', sys_get_temp_dir() . '/ttt_server.log', 'a']],
             $pipes, TTT_SRC, $env
         );
