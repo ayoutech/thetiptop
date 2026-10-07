@@ -397,7 +397,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "count(container_last_seen{name!=\"\"})",
+          "expr": "count(docker_container_cpu_percent)",
           "legendFormat": "",
           "refId": "A",
           "editorMode": "code",
@@ -744,7 +744,7 @@
       "id": 13,
       "type": "timeseries",
       "title": "CPU par conteneur",
-      "description": "100 % = un cœur complet.",
+      "description": "100 % = un cœur complet. Source : docker stats relevé chaque minute (cron sur la VM).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -761,7 +761,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) * 100",
+          "expr": "docker_container_cpu_percent",
           "legendFormat": "{{name}}",
           "refId": "A",
           "editorMode": "code",
@@ -820,7 +820,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "container_memory_working_set_bytes{name!=\"\"}",
+          "expr": "docker_container_memory_bytes",
           "legendFormat": "{{name}}",
           "refId": "A",
           "editorMode": "code",
@@ -861,137 +861,19 @@
     },
     {
       "id": 15,
-      "type": "timeseries",
-      "title": "Réseau reçu par conteneur",
-      "description": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 30,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "expr": "sum by (name) (rate(container_network_receive_bytes_total{name!=\"\"}[5m]))",
-          "legendFormat": "{{name}}",
-          "refId": "A",
-          "editorMode": "code",
-          "range": true
-        }
-      ],
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Bps",
-          "custom": {
-            "lineWidth": 1,
-            "fillOpacity": 10,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            }
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 16,
-      "type": "timeseries",
-      "title": "Réseau émis par conteneur",
-      "description": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 30,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "expr": "sum by (name) (rate(container_network_transmit_bytes_total{name!=\"\"}[5m]))",
-          "legendFormat": "{{name}}",
-          "refId": "A",
-          "editorMode": "code",
-          "range": true
-        }
-      ],
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Bps",
-          "custom": {
-            "lineWidth": 1,
-            "fillOpacity": 10,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            }
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 17,
       "type": "row",
       "title": "Disponibilité des services",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 38,
+        "y": 30,
         "w": 24,
         "h": 1
       },
       "panels": []
     },
     {
-      "id": 18,
+      "id": 16,
       "type": "timeseries",
       "title": "Cibles Prometheus (1 = joignable)",
       "description": "",
@@ -1001,7 +883,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 39,
+        "y": 31,
         "w": 12,
         "h": 7
       },
@@ -1052,7 +934,7 @@
       }
     },
     {
-      "id": 19,
+      "id": 17,
       "type": "timeseries",
       "title": "Sites web (sonde blackbox, 1 = en ligne)",
       "description": "",
@@ -1062,7 +944,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 39,
+        "y": 31,
         "w": 12,
         "h": 7
       },
