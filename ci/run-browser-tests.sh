@@ -30,8 +30,10 @@ done
 echo "==> Application (code du dépôt, serveur PHP)"
 docker create --name "$APP" --network "$NET" --network-alias app \
   -e DB_HOST=db -e DB_PORT=3306 -e DB_NAME=thetiptop_ci -e DB_USER=root -e DB_PASS=ci_root \
-  "$CI_IMAGE" sh -c 'php tests/browser/seed.php && exec php -S 0.0.0.0:8080 -t src' >/dev/null
-tar -c src tests phpunit.xml | docker cp - "$APP":/app
+  "$CI_IMAGE" sh -c 'php tests/browser/seed.php && ARGS=$(sed -n "s/^\([a-z_.]*\) *= *\(.*\)\$/-d \1=\2/p" docker/security.ini) && exec php $ARGS -S 0.0.0.0:8080 -t src' >/dev/null
+# docker/security.ini = configuration PHP de production ; le serveur PHP en ligne de commande exige des options -d
+# (il ignore output_buffering dans un fichier .ini), construites ici à partir de ce même fichier
+tar -c src tests docker phpunit.xml | docker cp - "$APP":/app
 docker start "$APP" >/dev/null
 i=0
 until docker exec "$APP" php -r 'exit(@file_get_contents("http://127.0.0.1:8080/") === false ? 1 : 0);' >/dev/null 2>&1; do
