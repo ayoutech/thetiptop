@@ -2,6 +2,7 @@ FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
     libmariadb-dev \
+    && apt-get upgrade -y \
     && docker-php-ext-install pdo pdo_mysql mysqli \
     && a2enmod rewrite headers \
     && apt-get clean
